@@ -13,7 +13,7 @@ const options = {
     },
     servers: [
       {
-        url: "http://92.255.77.185:8000/api",
+        url: "http://147.45.159.254/:8000/api",
       },
       {
         url: "https://e-education-backend-test.onrender.com/api",
