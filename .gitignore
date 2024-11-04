@@ -1,0 +1,9 @@
+.vscode
+node_modules
+uploads/assigns/*
+uploads/banners/*
+uploads/defaults/*
+uploads/files/*
+uploads/images/*
+uploads/questions/*
+uploads/videos/*
