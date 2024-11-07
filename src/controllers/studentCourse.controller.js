@@ -1,5 +1,5 @@
 const StudentCourse = require("../models/studentCourse.model");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 // Create a new enrollment
 exports.createEnrollment = async (req, res) => {
@@ -22,7 +22,7 @@ exports.getAllEnrollments = async (req, res) => {
     // Build query object
     let query = {};
     if (isActive !== undefined) {
-      query.is_active = isActive === 'true'; // Convert string to boolean
+      query.is_active = isActive === "true"; // Convert string to boolean
     }
 
     // Aggregate to get student enrollments with courses
@@ -39,6 +39,17 @@ exports.getAllEnrollments = async (req, res) => {
         },
       },
       {
+        $unwind: "$course_info", // Unwind course info to process each course separately
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "course_info.teacher_id",
+          foreignField: "_id",
+          as: "teacher_info",
+        },
+      },
+      {
         $group: {
           _id: "$student_id", // Group by student_id
           student: { $first: "$student_id" }, // Get student_id
@@ -52,8 +63,8 @@ exports.getAllEnrollments = async (req, res) => {
             $reduce: {
               input: "$courses",
               initialValue: [],
-              in: { $concatArrays: ["$$value", "$$this"] }
-            }
+              in: { $concatArrays: ["$$value", "$$this"] },
+            },
           }, // Flatten the courses array
         },
       },
@@ -72,7 +83,7 @@ exports.getAllEnrollments = async (req, res) => {
         },
       },
       {
-        $unwind: "$student_info"
+        $unwind: "$student_info",
       },
       {
         $project: {
@@ -103,8 +114,6 @@ exports.getAllEnrollments = async (req, res) => {
   }
 };
 
-
-
 // Get an enrollment by ID
 exports.getEnrollmentById = async (req, res) => {
   try {
@@ -120,34 +129,32 @@ exports.getEnrollmentById = async (req, res) => {
   }
 };
 
-
-
 exports.getEnrollmentsByStudentId = async (req, res) => {
   const { id } = req.params;
   const studentId = new mongoose.Types.ObjectId(id);
   try {
     const enrollments = await StudentCourse.aggregate([
       {
-        $match: { student_id: studentId }
+        $match: { student_id: studentId },
       },
       {
         $lookup: {
           from: "courses",
           localField: "course_id",
           foreignField: "_id",
-          as: "course_info"
-        }
+          as: "course_info",
+        },
       },
       {
-        $unwind: "$course_info"
+        $unwind: "$course_info",
       },
       {
         $lookup: {
           from: "users",
           localField: "course_info.teacher_id",
           foreignField: "_id",
-          as: "teacher_info"
-        }
+          as: "teacher_info",
+        },
       },
       {
         $project: {
@@ -165,12 +172,12 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
             is_active: "$course_info.is_active",
             mentor_id: "$course_info.mentor_id",
             createdAt: "$course_info.createdAt",
-            updatedAt: "$course_info.updatedAt"
+            updatedAt: "$course_info.updatedAt",
           },
           progress: "$progress",
-          completed: "$completed"
-        }
-      }  
+          completed: "$completed",
+        },
+      },
     ]);
 
     res.status(200).json(enrollments);
@@ -179,26 +186,24 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
   }
 };
 
-
 exports.getEnrollmentsByCourseId = async (req, res) => {
   const { id } = req.params;
   const courseId = new mongoose.Types.ObjectId(id);
   try {
-
     students = await StudentCourse.aggregate([
       {
-        $match: { course_id: courseId }
+        $match: { course_id: courseId },
       },
       {
         $lookup: {
           from: "users",
           localField: "student_id",
           foreignField: "_id",
-          as: "student_info"
-        }
+          as: "student_info",
+        },
       },
       {
-        $unwind: "$student_info"
+        $unwind: "$student_info",
       },
       {
         $project: {
@@ -207,11 +212,11 @@ exports.getEnrollmentsByCourseId = async (req, res) => {
             id: "$student_info._id",
             name: "$student_info.name",
             phone: "$student_info.phone",
-            photo: "$student_info.photo"
+            photo: "$student_info.photo",
           },
           progress: "$progress",
-          completed: "$completed"
-        }
+          completed: "$completed",
+        },
       },
       {
         $group: {
@@ -220,11 +225,11 @@ exports.getEnrollmentsByCourseId = async (req, res) => {
           enrollments: {
             $push: {
               progress: "$progress",
-              completed: "$completed"
-            }
-          }
-        }
-      }
+              completed: "$completed",
+            },
+          },
+        },
+      },
     ]);
 
     // if (!students || students.length === 0) {
@@ -235,10 +240,7 @@ exports.getEnrollmentsByCourseId = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-
 };
-
-
 
 exports.updateEnrollmentById = async (req, res) => {
   try {

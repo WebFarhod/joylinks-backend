@@ -16,11 +16,11 @@ const options = {
         url: "http://147.45.159.254:8000/api",
       },
       {
-        url: "https://e-education-backend-test.onrender.com/api",
+        url: "https://joylinks-backend.onrender.com/api",
       },
-      {
-        url: "https://e-education-backend.onrender.com/api",
-      },
+      // {
+      //   url: "https://e-education-backend.onrender.com/api",
+      // },
       {
         url: "http://localhost:8000/api",
       },
