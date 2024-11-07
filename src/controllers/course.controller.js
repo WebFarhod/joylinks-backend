@@ -67,6 +67,51 @@ exports.getPublicCourses = async (req, res) => {
       query.name = { $regex: search, $options: "i" };
     }
 
+    // const courses = await Course.aggregate([
+    //   { $match: query },
+    //   {
+    //     $lookup: {
+    //       from: "categories",
+    //       localField: "category_id",
+    //       foreignField: "_id",
+    //       as: "category",
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "teacher_id",
+    //       foreignField: "_id",
+    //       as: "teacher",
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "mentor_id",
+    //       foreignField: "_id",
+    //       as: "mentor",
+    //     },
+    //   },
+    //   { $skip: (page - 1) * limit },
+    //   { $limit: parseInt(limit) },
+    //   {
+    //     $project: {
+    //       name: 1,
+    //       photo: 1,
+    //       description: 1,
+    //       price: 1,
+    //       duration: 1,
+    //       level: 1,
+    //       is_active: 1,
+    //       is_top: 1,
+    //       category: { name: 1, _id: 1 },
+    //       teacher: { firstname: 1, lastname: 1, _id: 1 },
+    //       mentor: { firstname: 1, lastname: 1, _id: 1 },
+    //     },
+    //   },
+    // ]);
+
     const courses = await Course.aggregate([
       { $match: query },
       {
@@ -96,6 +141,13 @@ exports.getPublicCourses = async (req, res) => {
       { $skip: (page - 1) * limit },
       { $limit: parseInt(limit) },
       {
+        $addFields: {
+          category: { $arrayElemAt: ["$category", 0] },
+          teacher: { $arrayElemAt: ["$teacher", 0] },
+          mentor: { $arrayElemAt: ["$mentor", 0] },
+        },
+      },
+      {
         $project: {
           name: 1,
           photo: 1,
@@ -105,9 +157,14 @@ exports.getPublicCourses = async (req, res) => {
           level: 1,
           is_active: 1,
           is_top: 1,
-          category: { name: 1, _id: 1 },
-          teacher: { firstname: 1, lastname: 1, _id: 1 },
-          mentor: { firstname: 1, lastname: 1, _id: 1 },
+          "category._id": 1,
+          "category.name": 1,
+          "teacher._id": 1,
+          "teacher.firstname": 1,
+          "teacher.lastname": 1,
+          "mentor._id": 1,
+          "mentor.firstname": 1,
+          "mentor.lastname": 1,
         },
       },
     ]);
@@ -591,7 +648,9 @@ exports.getStatistics = async (req, res) => {
     const now = new Date();
 
     // 1. Unique students
-    const totalStudents = await StudentCourse.distinct("student_id").countDocuments();
+    const totalStudents = await StudentCourse.distinct(
+      "student_id"
+    ).countDocuments();
     console.log(`Total Students: ${totalStudents}`);
 
     // 2. Number of teachers (using correct query)
@@ -622,27 +681,39 @@ exports.getStatistics = async (req, res) => {
       startOfWeek.setHours(0, 0, 0, 0);
       return startOfWeek;
     };
-    const getStartOfMonth = () => new Date(now.getFullYear(), now.getMonth(), 1);
+    const getStartOfMonth = () =>
+      new Date(now.getFullYear(), now.getMonth(), 1);
     const getStartOfYear = () => new Date(now.getFullYear(), 0, 1);
 
     // 6. Total revenue calculation (using a mock calculateRevenue function for now)
-    const revenueMatch = {
-      daily: { createdAt: { $gte: getStartOfDay() } },
-      weekly: { createdAt: { $gte: getStartOfWeek() } },
-      monthly: { createdAt: { $gte: getStartOfMonth() } },
-      yearly: { createdAt: { $gte: getStartOfYear() } },
-    }[timeFrame] || {};
+    const revenueMatch =
+      {
+        daily: { createdAt: { $gte: getStartOfDay() } },
+        weekly: { createdAt: { $gte: getStartOfWeek() } },
+        monthly: { createdAt: { $gte: getStartOfMonth() } },
+        yearly: { createdAt: { $gte: getStartOfYear() } },
+      }[timeFrame] || {};
 
     const totalRevenue = await calculateRevenue(revenueMatch);
 
     // 7. Number of ongoing courses (replace 'is_active' with actual status field)
-    const ongoingCourses = await StudentCourse.countDocuments({ completed: false });
+    const ongoingCourses = await StudentCourse.countDocuments({
+      completed: false,
+    });
 
     // Detailed revenue statistics
-    const dailyRevenue = await calculateRevenue({ createdAt: { $gte: getStartOfDay() } });
-    const weeklyRevenue = await calculateRevenue({ createdAt: { $gte: getStartOfWeek() } });
-    const monthlyRevenue = await calculateRevenue({ createdAt: { $gte: getStartOfMonth() } });
-    const yearlyRevenue = await calculateRevenue({ createdAt: { $gte: getStartOfYear() } });
+    const dailyRevenue = await calculateRevenue({
+      createdAt: { $gte: getStartOfDay() },
+    });
+    const weeklyRevenue = await calculateRevenue({
+      createdAt: { $gte: getStartOfWeek() },
+    });
+    const monthlyRevenue = await calculateRevenue({
+      createdAt: { $gte: getStartOfMonth() },
+    });
+    const yearlyRevenue = await calculateRevenue({
+      createdAt: { $gte: getStartOfYear() },
+    });
 
     // Send response
     res.status(200).json({
@@ -693,4 +764,3 @@ async function calculateRevenue(match) {
 
   return result[0] ? result[0].totalRevenue : 0;
 }
-
