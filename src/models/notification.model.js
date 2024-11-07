@@ -23,10 +23,10 @@ const notificationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isRead: {
-      type: Boolean,
-      default: false,
-    },
+    // isRead: {
+    //   type: Boolean,
+    //   default: false,
+    // },
     readByUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,

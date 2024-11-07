@@ -18,12 +18,10 @@ exports.createNotification = async (req, res) => {
     }
 
     if (!userId && !toAll && !toStudents && !toMentors) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "At least one target (userId, toAll, toStudents, toMentors) is required",
-        });
+      return res.status(400).json({
+        error:
+          "At least one target (userId, toAll, toStudents, toMentors) is required",
+      });
     }
 
     const notification = new Notification({
@@ -32,8 +30,7 @@ exports.createNotification = async (req, res) => {
       toAll: toAll || false,
       toStudents: toStudents || false,
       toMentors: toMentors || false,
-      isRead: false,
-      is_active: true, // Default to true if not provided
+      is_active: true,
     });
 
     await notification.save();
@@ -96,6 +93,11 @@ exports.getAllNotifications = async (req, res) => {
       return res.status(400).json({ error: "Invalid limit value" });
     }
 
+    const unreadCount = await Notification.countDocuments({
+      ...filters,
+      readByUsers: { $ne: new mongoose.Types.ObjectId(userId) },
+    });
+
     // Fetch notifications with user information
     const notifications = await Notification.aggregate([
       { $match: filters },
@@ -119,61 +121,32 @@ exports.getAllNotifications = async (req, res) => {
           is_active: 1,
           createdAt: 1,
           updatedAt: 1,
-          userFirstName: "$userInfo.firstname", // Fetching firstname
-          userLastName: "$userInfo.lastname", // Fetching lastname
+          "user._id": "$userInfo._id",
+          "user.name": "$userInfo.firstname",
+          "user.lastname": "$userInfo.lastname",
+
+          isRead: {
+            $in: [new mongoose.Types.ObjectId(userId), "$readByUsers"],
+          },
         },
       },
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: parsedLimit },
-      {
-        $lookup: {
-          from: "users",
-          localField: "userId",
-          foreignField: "_id",
-          as: "user_info",
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          message: 1,
-          toAll: 1,
-          toStudents: 1,
-          toMentors: 1,
-          isRead: 1,
-          readByUsers: 1,
-          is_active: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          user: {
-            $cond: {
-              if: { $gt: [{ $size: "$user_info" }, 0] },
-              then: {
-                id: { $arrayElemAt: ["$user_info._id", 0] },
-                firstname: { $arrayElemAt: ["$user_info.firstname", 0] },
-                lastname: { $arrayElemAt: ["$user_info.lastname", 0] },
-                phone: { $arrayElemAt: ["$user_info.phone", 0] },
-                role: { $arrayElemAt: ["$user_info.role", 0] },
-                active: { $arrayElemAt: ["$user_info.active", 0] },
-                photo: { $arrayElemAt: ["$user_info.photo", 0] },
-                biography: { $arrayElemAt: ["$user_info.biography", 0] },
-                region: { $arrayElemAt: ["$user_info.region", 0] },
-                district: { $arrayElemAt: ["$user_info.district", 0] },
-                is_active: { $arrayElemAt: ["$user_info.is_active", 0] },
-                birthdate: { $arrayElemAt: ["$user_info.birthdate", 0] },
-                gender: { $arrayElemAt: ["$user_info.gender", 0] },
-              },
-              else: null,
-            },
-          },
-        },
-      },
     ]);
 
     // Count total notifications matching the filters
     const totalCount = await Notification.countDocuments(filters);
 
+    if (notifications.length === 0) {
+      return res.status(200).json({
+        message: "No notifications available.",
+        notifications: [],
+        totalPages: 0,
+        currentPage: page,
+        unreadCount: unreadCount,
+      });
+    }
     // Respond with notifications or a message if none exist
     if (notifications.length === 0) {
       return res.status(200).json({
@@ -181,6 +154,7 @@ exports.getAllNotifications = async (req, res) => {
         notifications: [],
         totalPages: 0,
         currentPage: page,
+        unreadCount: unreadCount,
       });
     }
 
@@ -188,6 +162,7 @@ exports.getAllNotifications = async (req, res) => {
       notifications: notifications,
       totalPages: Math.ceil(totalCount / parsedLimit),
       currentPage: parseInt(page, 10),
+      unreadCount: unreadCount,
     });
   } catch (error) {
     console.error("Error fetching notifications:", error);
@@ -197,10 +172,18 @@ exports.getAllNotifications = async (req, res) => {
 
 exports.getNotificationById = async (req, res) => {
   try {
-    const notification = await Notification.findById(req.params.id);
+    const notificationId = req.params.id;
+    const userId = req.user.id;
+
+    const notification = await Notification.findById(notificationId);
 
     if (!notification) {
       return res.status(404).json({ message: "Notification not found" });
+    }
+    
+    if (!notification.readByUsers.includes(userId)) {
+      notification.readByUsers.push(userId);
+      await notification.save();
     }
 
     res.status(200).json(notification);
@@ -213,6 +196,7 @@ exports.getNotificationById = async (req, res) => {
 exports.updateNotificationById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id, req.body);
 
     // Check if the provided ID is a valid MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -275,12 +259,10 @@ exports.deleteNotificationById = async (req, res) => {
     console.log("Deleted notification with ID:", id);
 
     // Return a success response
-    res
-      .status(200)
-      .json({
-        message: "Notification deleted successfully",
-        deletedNotification,
-      });
+    res.status(200).json({
+      message: "Notification deleted successfully",
+      deletedNotification,
+    });
   } catch (error) {
     console.error("Error deleting notification:", error);
     res.status(500).json({ error: error.message });

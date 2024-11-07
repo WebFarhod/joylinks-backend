@@ -4,9 +4,6 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const df = await District.find();
-    console.log(df);
-
     const { region } = req.query;
 
     if (!region) {

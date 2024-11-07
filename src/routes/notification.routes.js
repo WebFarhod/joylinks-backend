@@ -14,13 +14,14 @@ router.post(
 router.get(
   "/",
   authenticateToken,
-//   checkRole(["admin"]),
+  checkRole(["admin"]),
   notificationController.getAllNotifications
 );
 
 router.get(
   "/:id",
   authenticateToken,
+  // checkRole(["admin"]),
   notificationController.getNotificationById
 );
 
