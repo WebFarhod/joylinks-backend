@@ -10,6 +10,7 @@ const { convertToSeconds } = require("../utils/convertToSeconds");
 const mongoose = require("mongoose");
 const Assign = require("../models/assign.model");
 const Quiz = require("../models/quiz.model");
+const { ObjectId } = require("mongodb");
 
 // Create a new course
 exports.createCourse = async (req, res) => {
@@ -26,8 +27,6 @@ exports.createCourse = async (req, res) => {
 // Get public courses with filters
 exports.getPublicCourses = async (req, res) => {
   try {
-    console.log("keldi", req.query);
-
     const {
       is_top,
       teacher,
@@ -49,9 +48,9 @@ exports.getPublicCourses = async (req, res) => {
       query.is_top = true;
     }
 
-    if (teacher) query.teacher_id = teacher;
-    if (mentor) query.mentor_id = mentor;
-    if (category) query.category_id = category;
+    if (teacher) query.teacher_id = new ObjectId(teacher);
+    if (mentor) query.mentor_id = new ObjectId(mentor);
+    if (category) query.category_id = new ObjectId(category);
     if (level) query.level = level;
     if (minDuration || maxDuration) {
       query.duration = {};
@@ -66,51 +65,6 @@ exports.getPublicCourses = async (req, res) => {
     if (search) {
       query.name = { $regex: search, $options: "i" };
     }
-
-    // const courses = await Course.aggregate([
-    //   { $match: query },
-    //   {
-    //     $lookup: {
-    //       from: "categories",
-    //       localField: "category_id",
-    //       foreignField: "_id",
-    //       as: "category",
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "teacher_id",
-    //       foreignField: "_id",
-    //       as: "teacher",
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "mentor_id",
-    //       foreignField: "_id",
-    //       as: "mentor",
-    //     },
-    //   },
-    //   { $skip: (page - 1) * limit },
-    //   { $limit: parseInt(limit) },
-    //   {
-    //     $project: {
-    //       name: 1,
-    //       photo: 1,
-    //       description: 1,
-    //       price: 1,
-    //       duration: 1,
-    //       level: 1,
-    //       is_active: 1,
-    //       is_top: 1,
-    //       category: { name: 1, _id: 1 },
-    //       teacher: { firstname: 1, lastname: 1, _id: 1 },
-    //       mentor: { firstname: 1, lastname: 1, _id: 1 },
-    //     },
-    //   },
-    // ]);
 
     const courses = await Course.aggregate([
       { $match: query },
@@ -138,6 +92,7 @@ exports.getPublicCourses = async (req, res) => {
           as: "mentor",
         },
       },
+      // { $match: { "category._id": category } },
       { $skip: (page - 1) * limit },
       { $limit: parseInt(limit) },
       {

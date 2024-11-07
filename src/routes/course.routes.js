@@ -16,7 +16,6 @@ router.post(
 router.get(
   "/public",
   (req, res, next) => {
-    console.log("req.query", req.query);
     next();
   },
   courseController.getPublicCourses
@@ -37,10 +36,7 @@ router.get("/:id", courseController.getCourseById);
 router.get("/:id/statistics", courseController.getCourseByIdWithStatistics);
 
 // Get statistics for all courses
-router.get(
-  "/statistics",
-  courseController.getStatistics
-);
+router.get("/statistics", courseController.getStatistics);
 
 // Update a course by ID
 router.put(
@@ -392,7 +388,6 @@ module.exports = router;
  *       404:
  *         description: Course not found
  */
-
 
 /**
  * @swagger
