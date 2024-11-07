@@ -4,6 +4,9 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
+    const df = await District.find();
+    console.log(df);
+
     const { region } = req.query;
 
     if (!region) {
@@ -22,14 +25,16 @@ router.get("/", async (req, res) => {
 
     // Query districts using a flexible regex
     const districts = await District.find({
-      region: { $regex: regex }
+      region: { $regex: regex },
     });
 
     // Log the query result
     console.log("Query result:", districts);
 
     if (districts.length === 0) {
-      return res.status(404).json({ message: "No districts found for the given region" });
+      return res
+        .status(404)
+        .json({ message: "No districts found for the given region" });
     }
 
     res.status(200).json(districts);
@@ -39,8 +44,6 @@ router.get("/", async (req, res) => {
 });
 
 module.exports = router;
-
-
 
 /**
  * @swagger

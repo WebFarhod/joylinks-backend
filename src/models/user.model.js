@@ -55,14 +55,14 @@ const userSchema = new mongoose.Schema(
         "Andijon viloyati",
         "Buxoro viloyati",
         "Samarqand viloyati",
-        "Farg'ona viloyati",
+        "Farg‘ona viloyati",
         "Jizzax viloyati",
         "Qashqadaryo viloyati",
         "Xorazm viloyati",
         "Namangan viloyati",
         "Navoiy viloyati",
         "Surxondaryo viloyati",
-        "Qoraqalpog'iston Respublikasi",
+        "Qoraqalpog‘iston Respublikasi",
         "Toshkent shahar",
       ],
       default: "Toshkent viloyati",
@@ -117,15 +117,19 @@ userSchema.pre(/^find/, function (next) {
 });
 
 // Cascade delete related notifications
-userSchema.pre("deleteOne", { document: true, query: true }, async function (next) {
-  try {
-    // Delete all notifications related to this user
-    await mongoose.model("notifications").deleteMany({ userId: this._id });
-    next();
-  } catch (error) {
-    next(error);
+userSchema.pre(
+  "deleteOne",
+  { document: true, query: true },
+  async function (next) {
+    try {
+      // Delete all notifications related to this user
+      await mongoose.model("notifications").deleteMany({ userId: this._id });
+      next();
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 const User = mongoose.model("users", userSchema);
 

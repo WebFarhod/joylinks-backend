@@ -58,6 +58,7 @@ exports.createNotification = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 exports.getAllNotifications = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -253,8 +254,8 @@ exports.deleteNotificationById = async (req, res) => {
     console.log("Attempting to delete notification with ID:", id);
 
     // Find the notification by ID
-    // const notification = await Notification.findById(id);
-    const notification = await Notification.deleteMany();
+    const notification = await Notification.findById(id);
+    // const notification = await Notification.deleteMany();
 
     if (!notification) {
       return res.status(404).json({ message: "Notification not found" });
