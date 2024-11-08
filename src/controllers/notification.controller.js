@@ -69,7 +69,12 @@ exports.getAllNotifications = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    let filters = {};
+    const userCreatedAt = user.createdAt;
+
+    let filters = {
+      createdAt: { $gte: userCreatedAt },
+    };
+
     if (user.role.name == "student") {
       filters.$or = [
         { toStudents: true },
@@ -121,7 +126,7 @@ exports.getAllNotifications = async (req, res) => {
           is_active: 1,
           createdAt: 1,
           updatedAt: 1,
-          "user._id": "$userInfo._id",
+          userId: "$userInfo._id",
           "user.name": "$userInfo.firstname",
           "user.lastname": "$userInfo.lastname",
 
@@ -180,7 +185,7 @@ exports.getNotificationById = async (req, res) => {
     if (!notification) {
       return res.status(404).json({ message: "Notification not found" });
     }
-    
+
     if (!notification.readByUsers.includes(userId)) {
       notification.readByUsers.push(userId);
       await notification.save();
