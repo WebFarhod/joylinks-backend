@@ -1,53 +1,55 @@
 const mongoose = require("mongoose");
-const { TransactionStatus } = require("../configs/transaction");
+
+const { PaymeState } = require("../enums/PaymeState");
 
 const { Schema, model } = mongoose;
 
 const transactionSchema = new Schema(
-  {
-    trans_id: {
-      type: String,
-      // required: true,
+    {
+        id: {
+            type: String,
+            required: true,
+        },
+        course_id: {
+            type: Schema.Types.ObjectId,
+            ref: "courses",
+            required: true,
+        },
+        user_id: {
+            type: Schema.Types.ObjectId,
+            ref: "users",
+            required: true,
+        },
+        state: {
+            type: Number,
+            enum: Object.values(PaymeState),
+            required: true,
+        },
+        amount: {
+            type: Number,
+            required: true,
+        },
+        create_time: {
+            type: Number,
+            default: Date.now(),
+        },
+        perform_time: {
+            type: Number,
+            default: 0,
+        },
+        cancel_time: {
+            type: Number,
+            default: 0,
+        },
+        reason: {
+            type: Number,
+            default: null,
+        },
     },
-    user_id: {
-      type: String,
-      required: true,
-      ref: "users",
-    },
-    course_id: {
-      type: String,
-      required: true,
-      ref: "courses",
-    },
-    status: {
-      type: String,
-      enum: Object.values(TransactionStatus),
-      required: true,
-    },
-    amount: {
-      type: Number,
-      required: true,
-    },
-    create_time: {
-      type: Number,
-      default: Date.now(),
-    },
-    perform_time: {
-      type: Number,
-      default: 0,
-    },
-    cancel_time: {
-      type: Number,
-      default: 0,
-    },
-    prepare_id: {
-      type: String,
-      required: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
+    {
+        timestamps: true,
+    }
 );
+const Transaction = model("transaction", transactionSchema);
 
-module.exports = model("transaction", transactionSchema);
+module.exports = Transaction;

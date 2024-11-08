@@ -4,7 +4,7 @@ const {
   ClickError,
 } = require("../configs/transaction");
 const Course = require("../models/course.model");
-const transactionModel = require("../models/transaction.model");
+const transactionModel = require("../models/transactions.model");
 const User = require("../models/user.model");
 const checkClickSignature = require("../utils/checkSignature");
 

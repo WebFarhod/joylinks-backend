@@ -23,7 +23,8 @@ const { getStatisAllData } = require("../controllers/statisConroller");
 const uploadRoutes = require("./uploadRoutes");
 const resultsRoutes = require("./result.routes");
 const orderRoutes = require("./order.routes");
-const transactionRouter = require("./transaction");
+// const transactionRouter = require("./transaction");
+const paymentRoutes = require("./payment.routes");
 
 const router = express.Router();
 
@@ -47,6 +48,7 @@ router.use("/statistics", getStatisAllData);
 router.use("/upload", uploadRoutes);
 router.use("/results", resultsRoutes);
 router.use("/orders", orderRoutes);
+router.use("/payment", paymentRoutes);
 router.use(
   "/videos",
   authenticateToken,
@@ -54,7 +56,7 @@ router.use(
   upload.single("video"),
   uploadvideo
 );
-router.use("/payments/click", transactionRouter);
+// router.use("/payments/click", transactionRouter);
 
 module.exports = router;
 
