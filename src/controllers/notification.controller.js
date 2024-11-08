@@ -75,23 +75,27 @@ exports.getAllNotifications = async (req, res) => {
       createdAt: { $gte: userCreatedAt },
     };
 
+    console.log("user", user);
+
     if (user.role.name == "student") {
       filters.$or = [
         { toStudents: true },
         { userId: new mongoose.Types.ObjectId(user.id) },
-        { is_active: true },
+        // { is_active: true },
       ];
     }
     if (user.role.name === "mentor") {
       filters.$or = [
         { toMentors: true },
         { userId: new mongoose.Types.ObjectId(user.id) },
-        { is_active: true },
+        // { is_active: true },
       ];
     }
     if (user.role.name === "admin") {
       filters = {};
     }
+
+    console.log("filter", filters);
 
     const parsedLimit = parseInt(limit, 10);
     if (isNaN(parsedLimit)) {
