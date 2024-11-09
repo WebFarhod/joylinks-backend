@@ -554,6 +554,7 @@ exports.deleteCourseById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 exports.getCourseByIdWithStatistics = async (req, res) => {
   try {
     const { id } = req.params;

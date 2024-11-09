@@ -25,6 +25,7 @@ const resultsRoutes = require("./result.routes");
 const orderRoutes = require("./order.routes");
 // const transactionRouter = require("./transaction");
 const paymentRoutes = require("./payment.routes");
+const dashbordRoutes = require("./dashbord.routes.js");
 
 const router = express.Router();
 
@@ -49,6 +50,7 @@ router.use("/upload", uploadRoutes);
 router.use("/results", resultsRoutes);
 router.use("/orders", orderRoutes);
 router.use("/payment", paymentRoutes);
+router.use("/dashbord", dashbordRoutes);
 router.use(
   "/videos",
   authenticateToken,
