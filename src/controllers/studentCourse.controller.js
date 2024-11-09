@@ -4,6 +4,15 @@ const mongoose = require("mongoose");
 // Create a new enrollment
 exports.createEnrollment = async (req, res) => {
   try {
+    const studentCourse = await StudentCourse.findOne({
+      course_id: req.body.course_id,
+      student_id: req.body.student_id,
+    });
+
+    if (studentCourse) {
+      res.status(400).json({ message: "already exists" });
+    }
+
     const enrollment = new StudentCourse(req.body);
     await enrollment.save();
     res.status(201).json(enrollment);
@@ -18,6 +27,9 @@ exports.getAllEnrollments = async (req, res) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
     const isActive = req.query.is_active; // Optional query parameter to filter by active status
+    console.log("test");
+    const dd = await StudentCourse.find();
+    console.log("dd", dd);
 
     // Build query object
     let query = {};
@@ -41,49 +53,49 @@ exports.getAllEnrollments = async (req, res) => {
       {
         $unwind: "$course_info", // Unwind course info to process each course separately
       },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "course_info.teacher_id",
+      //     foreignField: "_id",
+      //     as: "teacher_info",
+      //   },
+      // },
+      // {
+      //   $group: {
+      //     _id: "$student_id", // Group by student_id
+      //     student: { $first: "$student_id" }, // Get student_id
+      //     courses: { $push: "$course_info" }, // Collect courses
+      //     count: { $sum: 1 }, // Count courses per student
+      //   },
+      // },
+      // {
+      //   $addFields: {
+      //     courses: {
+      //       $reduce: {
+      //         input: "$courses",
+      //         initialValue: [],
+      //         in: { $concatArrays: ["$$value", "$$this"] },
+      //       },
+      //     }, // Flatten the courses array
+      //   },
+      // },
       {
         $lookup: {
           from: "users",
-          localField: "course_info.teacher_id",
-          foreignField: "_id",
-          as: "teacher_info",
-        },
-      },
-      {
-        $group: {
-          _id: "$student_id", // Group by student_id
-          student: { $first: "$student_id" }, // Get student_id
-          courses: { $push: "$course_info" }, // Collect courses
-          count: { $sum: 1 }, // Count courses per student
-        },
-      },
-      {
-        $addFields: {
-          courses: {
-            $reduce: {
-              input: "$courses",
-              initialValue: [],
-              in: { $concatArrays: ["$$value", "$$this"] },
-            },
-          }, // Flatten the courses array
-        },
-      },
-      {
-        $skip: skip,
-      },
-      {
-        $limit: limit,
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "student",
+          localField: "student_id",
           foreignField: "_id",
           as: "student_info",
         },
       },
       {
         $unwind: "$student_info",
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
       },
       {
         $project: {
@@ -96,8 +108,13 @@ exports.getAllEnrollments = async (req, res) => {
             active: "$student_info.active",
             photo: "$student_info.photo",
           },
-          courses: 1,
-          count: 1, // Return the number of courses the student is enrolled in
+          // course_info: 1,
+          course: {
+            id: "$course_info._id",
+            name: "$course_info.name",
+            price: "$course_info.price",
+          },
+          // count: 1, // Return the number of courses the student is enrolled in
         },
       },
     ]);
@@ -148,34 +165,54 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
       {
         $unwind: "$course_info",
       },
-      {
-        $lookup: {
-          from: "users",
-          localField: "course_info.teacher_id",
-          foreignField: "_id",
-          as: "teacher_info",
-        },
-      },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "student_id",
+      //     foreignField: "_id",
+      //     as: "user_info",
+      //   },
+      // },
+      // {
+      //   $unwind: "$user_info",
+      // },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "course_info.teacher_id",
+      //     foreignField: "_id",
+      //     as: "teacher_info",
+      //   },
+      // },
+      // {
+      //   $unwind: "$teacher_info",
+      // },
       {
         $project: {
-          _id: 0,
+          _id: 1,
+          // teacher: {
+          //   _id: "$teacher_info._id",
+          //   firstname: "$teacher_info.firstname",
+          //   lastname: "$teacher_info.lastname",
+          //   photo: "$teacher_info.photo",
+          // },
+          // user: {
+          //   _id: "$user_info._id",
+          //   firstname: "$user_info.firstname",
+          //   lastname: "$user_info.lastname",
+          //   photo: "$user_info.photo",
+          // },
           course: {
             _id: "$course_info._id",
-            category_id: "$course_info.category_id",
+            // category_id: "$course_info.category_id",
             name: "$course_info.name",
-            description: "$course_info.description",
-            teacher: "$teacher_info",
-            price: "$course_info.price",
-            duration: "$course_info.duration",
-            level: "$course_info.level",
+            // duration: "$course_info.duration",
+            // level: "$course_info.level",
             photo: "$course_info.photo",
-            is_active: "$course_info.is_active",
-            mentor_id: "$course_info.mentor_id",
-            createdAt: "$course_info.createdAt",
-            updatedAt: "$course_info.updatedAt",
+            // is_active: "$course_info.is_active",
+            completed: "$completed",
+            progress: "$progress",
           },
-          progress: "$progress",
-          completed: "$completed",
         },
       },
     ]);
@@ -210,7 +247,8 @@ exports.getEnrollmentsByCourseId = async (req, res) => {
           _id: 0,
           student: {
             id: "$student_info._id",
-            name: "$student_info.name",
+            firstname: "$student_info.firstname",
+            lastname: "$student_info.lastname",
             phone: "$student_info.phone",
             photo: "$student_info.photo",
           },
@@ -218,18 +256,18 @@ exports.getEnrollmentsByCourseId = async (req, res) => {
           completed: "$completed",
         },
       },
-      {
-        $group: {
-          _id: "$student.id",
-          student: { $first: "$student" },
-          enrollments: {
-            $push: {
-              progress: "$progress",
-              completed: "$completed",
-            },
-          },
-        },
-      },
+      // {
+      //   $group: {
+      //     _id: "$student.id",
+      //     student: { $first: "$student" },
+      //     enrollments: {
+      //       $push: {
+      //         progress: "$progress",
+      //         completed: "$completed",
+      //       },
+      //     },
+      //   },
+      // },
     ]);
 
     // if (!students || students.length === 0) {
@@ -261,6 +299,8 @@ exports.updateEnrollmentById = async (req, res) => {
 // Delete an enrollment by ID
 exports.deleteEnrollmentById = async (req, res) => {
   try {
+    console.log("test", req.params.id);
+
     const enrollment = await StudentCourse.findByIdAndDelete(req.params.id);
     if (!enrollment) {
       return res.status(404).json({ message: "Enrollment not found" });

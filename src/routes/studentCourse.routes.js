@@ -3,33 +3,39 @@ const router = express.Router();
 const studentCourseController = require("../controllers/studentCourse.controller");
 // const { authenticateToken } = require("../middlewares/auth.middleware");
 const { checkRole } = require("../middlewares/role.middleware");
+const { authenticateToken } = require("../middlewares/auth.middleware");
 
-router.post(
-  "/",
-  checkRole(["admin", "student"]),
-  studentCourseController.createEnrollment
-);
+router.post("/", checkRole("admin"), studentCourseController.createEnrollment);
 
 router.get("/", studentCourseController.getAllEnrollments);
 
+router.get("/:id", studentCourseController.getEnrollmentById);
+
 router.get(
-  "/:id",
-  studentCourseController.getEnrollmentById
+  "/bystudentid/:id",
+  authenticateToken,
+  checkRole(["admin"]),
+  studentCourseController.getEnrollmentsByStudentId
 );
 
-router.get("/bystudentid/:id", studentCourseController.getEnrollmentsByStudentId);
-
-router.get("/bycourseid/:id", studentCourseController.getEnrollmentsByCourseId);
+router.get(
+  "/bycourseid/:id",
+  authenticateToken,
+  checkRole(["admin"]),
+  studentCourseController.getEnrollmentsByCourseId
+);
 
 router.put(
   "/:id",
-
+  authenticateToken,
+  checkRole(["admin"]),
   studentCourseController.updateEnrollmentById
 );
 
 router.delete(
   "/:id",
-
+  authenticateToken,
+  checkRole(["admin"]),
   studentCourseController.deleteEnrollmentById
 );
 
@@ -116,7 +122,6 @@ module.exports = router;
  *         description: Internal server error. An unexpected error occurred.
  */
 
-
 /**
  * @swagger
  * /studentcourses/{id}:
@@ -187,7 +192,6 @@ module.exports = router;
  *         description: Internal server error
  */
 
-
 /**
  * @swagger
  * /studentcourses/bycourseid/{id}:
@@ -242,7 +246,6 @@ module.exports = router;
  *         description: Internal server error
  */
 
-
 /**
  * @swagger
  * /studentcourses/bystudentid/{id}:
@@ -290,8 +293,6 @@ module.exports = router;
  *       500:
  *         description: Internal server error
  */
-
-
 
 /**
  * @swagger

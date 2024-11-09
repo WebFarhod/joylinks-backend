@@ -5,16 +5,9 @@ const User = require("../models/user.model");
 
 // Add a comment to a course
 exports.addComment = async (req, res) => {
-  console.log("test");
-
   try {
     const { courseId, text } = req.body;
-    const userId = req.user.id; // Assuming user is authenticated and their ID is available in `req.user`
-
-    console.log("userId", req.user);
-    console.log("userId", userId);
-
-    // Ensure the course exists
+    const userId = req.user.id;
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
@@ -40,7 +33,7 @@ exports.addComment = async (req, res) => {
 exports.getCommentsForCourse = async (req, res) => {
   try {
     const { courseId, page = 1, limit = 10 } = req.query;
-    console.log(req.query);
+
     const id = new mongoose.Types.ObjectId(courseId);
 
     let query = {};
@@ -69,10 +62,6 @@ exports.getCommentsForCourse = async (req, res) => {
         },
       },
     ]);
-    //   course: courseId,
-    // }).populate("user");
-
-    // console.log("comment", comments);
 
     if (comments.length === 0) {
       return res
@@ -91,8 +80,6 @@ exports.getCommentsForCourse = async (req, res) => {
 exports.approveComment = async (req, res) => {
   try {
     const { commentId } = req.params;
-
-    console.log(req.params);
     const id = new mongoose.Types.ObjectId(commentId);
 
     // Find the comment by its ID
@@ -123,9 +110,6 @@ exports.approveComment = async (req, res) => {
 exports.readComment = async (req, res) => {
   try {
     const { commentId } = req.params;
-    console.log(req.params);
-
-    // Find the comment by its ID
     const comment = await Comment.findById(commentId);
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
@@ -148,7 +132,6 @@ exports.deleteComment = async (req, res) => {
 
     // Find the comment by its ID
     const comment = await Comment.findByIdAndDelete(commentId);
-    console.log("delete", comment);
 
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
