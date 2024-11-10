@@ -223,6 +223,83 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
   }
 };
 
+exports.getMyCourse = async (req, res) => {
+  const id = user.id;
+  const studentId = new mongoose.Types.ObjectId(id);
+  try {
+    const enrollments = await StudentCourse.aggregate([
+      {
+        $match: { student_id: studentId },
+      },
+      {
+        $lookup: {
+          from: "courses",
+          localField: "course_id",
+          foreignField: "_id",
+          as: "course_info",
+        },
+      },
+      {
+        $unwind: "$course_info",
+      },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "student_id",
+      //     foreignField: "_id",
+      //     as: "user_info",
+      //   },
+      // },
+      // {
+      //   $unwind: "$user_info",
+      // },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "course_info.teacher_id",
+      //     foreignField: "_id",
+      //     as: "teacher_info",
+      //   },
+      // },
+      // {
+      //   $unwind: "$teacher_info",
+      // },
+      {
+        $project: {
+          _id: 1,
+          // teacher: {
+          //   _id: "$teacher_info._id",
+          //   firstname: "$teacher_info.firstname",
+          //   lastname: "$teacher_info.lastname",
+          //   photo: "$teacher_info.photo",
+          // },
+          // user: {
+          //   _id: "$user_info._id",
+          //   firstname: "$user_info.firstname",
+          //   lastname: "$user_info.lastname",
+          //   photo: "$user_info.photo",
+          // },
+          course: {
+            _id: "$course_info._id",
+            // category_id: "$course_info.category_id",
+            name: "$course_info.name",
+            // duration: "$course_info.duration",
+            // level: "$course_info.level",
+            photo: "$course_info.photo",
+            // is_active: "$course_info.is_active",
+            completed: "$completed",
+            progress: "$progress",
+          },
+        },
+      },
+    ]);
+
+    res.status(200).json(enrollments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 exports.getEnrollmentsByCourseId = async (req, res) => {
   const { id } = req.params;
   const courseId = new mongoose.Types.ObjectId(id);

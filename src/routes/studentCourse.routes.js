@@ -25,6 +25,8 @@ router.get(
   studentCourseController.getEnrollmentsByCourseId
 );
 
+router.get("/mycouses", authenticateToken, studentCourseController.getMyCourse);
+
 router.put(
   "/:id",
   authenticateToken,
@@ -259,6 +261,51 @@ module.exports = router;
  *       - in: path
  *         name: id
  *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique identifier of the student
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved enrollments for the student
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   course:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: The unique identifier of the course
+ *                       name:
+ *                         type: string
+ *                         description: The name of the course
+ *                       description:
+ *                         type: string
+ *                         description: The description of the course
+ *                   progress:
+ *                     type: string
+ *                     description: The progress of the student in the course
+ *                   completed:
+ *                     type: boolean
+ *                     description: Whether the student has completed the course
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /studentcourses/mycourse:
+ *   get:
+ *     summary: Get enrollments by student ID
+ *     description: Retrieve all course enrollments for a specific student by their ID.
+ *     tags: [StudentCourses]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
  *         schema:
  *           type: string
  *         description: The unique identifier of the student
