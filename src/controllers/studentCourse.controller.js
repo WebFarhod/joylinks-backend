@@ -224,16 +224,18 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
 };
 
 exports.getMyCourse = async (req, res) => {
-  // console.log("test");
-
-  const id = req.user.id;
-
-  const studentId = new mongoose.Types.ObjectId(id);
   try {
+    // Token orqali olinadigan foydalanuvchi identifikatori
+    const id = req.user.id;
+    const studentId = new mongoose.Types.ObjectId(id);
+
+    // Ma'lumotlar bazasidan kurslarga yozilgan enrollmentsni olish
     const enrollments = await StudentCourse.aggregate([
+      // Foydalanuvchiga tegishli enrollmentsni topish
       {
         $match: { student_id: studentId },
       },
+      // Kurslar bilan bog'lash
       {
         $lookup: {
           from: "courses",
@@ -245,6 +247,7 @@ exports.getMyCourse = async (req, res) => {
       {
         $unwind: "$course_info",
       },
+      // O'qituvchi bilan bog'lash
       {
         $lookup: {
           from: "users",
@@ -256,22 +259,39 @@ exports.getMyCourse = async (req, res) => {
       {
         $unwind: "$teacher_info",
       },
+      // Kategoriya bilan bog'lash
+      // {
+      //   $lookup: {
+      //     from: "categories",
+      //     localField: "course_info.category_id",
+      //     foreignField: "_id",
+      //     as: "category_info",
+      //   },
+      // },
+      // {
+      //   $unwind: "$category_info",
+      // },
+      // Kerakli ma'lumotlarni chiqarish
       {
         $project: {
           _id: 1,
+          _id: "$course_info._id",
+          name: "$course_info.name",
+          description: "$course_info.description",
+          price: "$course_info.price",
+          duration: "$course_info.duration",
+          level: "$course_info.level",
+          photo: "$course_info.photo",
+          is_active: "$course_info.is_active",
+          is_top: "$course_info.is_top",
+       
           teacher: {
             _id: "$teacher_info._id",
             firstname: "$teacher_info.firstname",
             lastname: "$teacher_info.lastname",
-            photo: "$teacher_info.photo",
           },
-          // user: {
-          //   _id: "$user_info._id",
-          //   firstname: "$user_info.firstname",
-          //   lastname: "$user_info.lastname",
-          //   photo: "$user_info.photo",
-          // },
-          course: "$course_info",
+          completed: "$course_info.completed",
+          progress: "$course_info.progress",
         },
       },
     ]);
