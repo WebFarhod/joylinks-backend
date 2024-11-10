@@ -3,12 +3,12 @@ const Lesson = require("../models/lesson.model");
 // Create a new module
 const createModule = async (req, res) => {
   try {
-    const lastItem = await Module.findOne({ course_id: req.body.course_id })
+    const lastItem = await Module.findOne({ course_id: req.body.course_id });
 
     if (!lastItem?.sequence) {
-      req.body.sequence = 1
+      req.body.sequence = 1;
     } else {
-      req.body.sequence = lastItem.sequence + 1
+      req.body.sequence = lastItem.sequence + 1;
     }
 
     const module = new Module(req.body);
@@ -39,9 +39,9 @@ const getModules = async (req, res) => {
       .skip(skip)
       .limit(limit)
       .populate({
-        path: 'lessons',
-        select: 'name sequence video_link materials is_active', // Select fields you want
-        match: { is_active: true } // Only include active lessons
+        path: "lessons",
+        select: "name sequence video_link materials is_active", // Select fields you want
+        match: { is_active: true }, // Only include active lessons
       });
 
     console.log("Modules:", modules);
@@ -63,7 +63,11 @@ const getModules = async (req, res) => {
 // Get a module by ID
 const getModuleById = async (req, res) => {
   try {
-    const module = await Module.findById(req.params.id);
+    const module = await Module.findById(req.params.id).populate({
+      path: "lessons",
+      select: "name sequence video_link materials is_active", // Select fields you want
+      match: { is_active: true }, // Only include active lessons
+    });
     if (!module) return res.status(404).json({ message: "Module not found" });
     res.status(200).json(module);
   } catch (error) {
