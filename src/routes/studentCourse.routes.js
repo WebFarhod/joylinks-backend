@@ -9,6 +9,12 @@ router.post("/", checkRole("admin"), studentCourseController.createEnrollment);
 
 router.get("/", studentCourseController.getAllEnrollments);
 
+router.get(
+  "/mycourses",
+  authenticateToken,
+  studentCourseController.getMyCourse
+);
+
 router.get("/:id", studentCourseController.getEnrollmentById);
 
 router.get(
@@ -24,8 +30,6 @@ router.get(
   checkRole(["admin"]),
   studentCourseController.getEnrollmentsByCourseId
 );
-
-router.get("/mycouses", authenticateToken, studentCourseController.getMyCourse);
 
 router.put(
   "/:id",
@@ -298,20 +302,16 @@ module.exports = router;
 
 /**
  * @swagger
- * /studentcourses/mycourse:
+ * /studentcourses/mycourses:
  *   get:
- *     summary: Get enrollments by student ID
- *     description: Retrieve all course enrollments for a specific student by their ID.
+ *     summary: Get enrolled courses for the current user
+ *     description: Retrieve all courses that the current user is enrolled in.
  *     tags: [StudentCourses]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *         schema:
- *           type: string
- *         description: The unique identifier of the student
  *     responses:
  *       200:
- *         description: Successfully retrieved enrollments for the student
+ *         description: Successfully retrieved enrollments for the user
  *         content:
  *           application/json:
  *             schema:
@@ -319,24 +319,27 @@ module.exports = router;
  *               items:
  *                 type: object
  *                 properties:
+ *                   _id:
+ *                     type: string
+ *                     description: The unique identifier of the enrollment record
  *                   course:
  *                     type: object
  *                     properties:
- *                       id:
+ *                       _id:
  *                         type: string
  *                         description: The unique identifier of the course
  *                       name:
  *                         type: string
  *                         description: The name of the course
- *                       description:
+ *                       photo:
  *                         type: string
- *                         description: The description of the course
- *                   progress:
- *                     type: string
- *                     description: The progress of the student in the course
- *                   completed:
- *                     type: boolean
- *                     description: Whether the student has completed the course
+ *                         description: The URL of the course photo
+ *                       completed:
+ *                         type: boolean
+ *                         description: Whether the student has completed the course
+ *                       progress:
+ *                         type: number
+ *                         description: The progress percentage of the student in the course
  *       500:
  *         description: Internal server error
  */
