@@ -576,10 +576,10 @@ exports.getCourseById = async (req, res) => {
           description: 1,
           price: 1,
           photo: 1,
-          teacher: {
-            _id: "$teacher._id",
-            name: "$teacher.name",
-          },
+          "teacher._id": 1,
+          "teacher.firstname": 1,
+          "teacher.lastname": 1,
+          "teacher.photo": 1,
           category: {
             _id: "$category._id",
             name: "$category.name",
@@ -608,7 +608,6 @@ exports.getCourseById = async (req, res) => {
     }
 
     const processCourse = async (course) => {
-
       course.purchased = !!hasPurchased;
 
       // Count the number of modules associated with the course
@@ -756,7 +755,6 @@ exports.getCourseByIdWithStatistics = async (req, res) => {
 };
 
 exports.getStatistics = async (req, res) => {
-
   try {
     const { timeFrame } = req.query;
 
