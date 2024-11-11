@@ -3,6 +3,7 @@ const router = express.Router();
 const courseController = require("../controllers/course.controller");
 const { authenticateToken } = require("../middlewares/auth.middleware");
 const { checkRole } = require("../middlewares/role.middleware");
+const { checkUser } = require("../middlewares/user.middleware");
 
 // Create a new course
 router.post(
@@ -30,7 +31,7 @@ router.get(
 );
 
 // Get a course by ID
-router.get("/:id", courseController.getCourseById);
+router.get("/:id", checkUser, courseController.getCourseById);
 
 // Get course by ID along with statistics
 router.get("/:id/statistics", courseController.getCourseByIdWithStatistics);

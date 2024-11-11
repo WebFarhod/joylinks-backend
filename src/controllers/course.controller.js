@@ -374,9 +374,160 @@ exports.getAdminCourses = async (req, res) => {
 };
 
 // Get a course by ID
+// exports.getCourseById = async (req, res) => {
+//   try {
+//     const courseId = req.params.id;
+
+//     // Validate if courseId is a valid ObjectId
+//     if (!mongoose.Types.ObjectId.isValid(courseId)) {
+//       return res.status(400).json({ message: "Invalid course ID" });
+//     }
+
+//     // Fetch the course details with aggregations
+//     const course = await Course.aggregate([
+//       {
+//         $match: {
+//           _id: new mongoose.Types.ObjectId(courseId),
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "users",
+//           localField: "teacher_id",
+//           foreignField: "_id",
+//           as: "teacher",
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$teacher",
+//           preserveNullAndEmptyArrays: true,
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "categories",
+//           localField: "category_id",
+//           foreignField: "_id",
+//           as: "category",
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$category",
+//           preserveNullAndEmptyArrays: true,
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           name: 1,
+//           description: 1,
+//           price: 1,
+//           teacher: {
+//             _id: "$teacher._id",
+//             name: "$teacher.name",
+//           },
+//           category: {
+//             _id: "$category._id",
+//             name: "$category.name",
+//           },
+//           mentor: {
+//             _id: "$mentor._id",
+//             name: "$mentor.name",
+//           },
+//           is_top: 1,
+//         },
+//       },
+//     ]);
+
+//     // If no course is found, return 404
+//     if (course?.length === 0) {
+//       return res.status(404).json({ message: "Course not found" });
+//     }
+
+//     // Processing course data to include additional counts
+//     const processCourse = async (course) => {
+//       // Count the number of modules associated with the course
+//       const totalModules = await Module.countDocuments({
+//         course_id: course._id,
+//       });
+//       course.module_counts = totalModules || 0;
+
+//       // Count the number of students enrolled in the course
+//       const totalEnrolledStudents = await StudentCourse.countDocuments({
+//         course_id: course._id,
+//       });
+//       course.enrolled_students_counts = totalEnrolledStudents || 0;
+
+//       // Fetch the modules and their related data
+//       const modules = await Module.find({ course_id: course._id });
+//       if (modules.length > 0) {
+//         let totalLessons = 0;
+//         let totalVideos = 0;
+//         let totalMaterials = 0;
+//         let totalAssigns = 0;
+//         let totalTests = 0;
+
+//         await Promise.all(
+//           modules.map(async (module) => {
+//             const lessonCounts = await Lesson.aggregate([
+//               { $match: { module_id: module._id } },
+//               {
+//                 $project: {
+//                   videoLinkCount: { $size: "$video_link" },
+//                   materialsCount: { $size: "$materials" },
+//                 },
+//               },
+//               {
+//                 $group: {
+//                   _id: null,
+//                   totalCount: { $sum: 1 },
+//                   totalVideoLinks: { $sum: "$videoLinkCount" },
+//                   totalMaterials: { $sum: "$materialsCount" },
+//                 },
+//               },
+//             ]);
+
+//             totalLessons +=
+//               lessonCounts.length > 0 ? lessonCounts[0].totalCount : 0;
+//             totalVideos +=
+//               lessonCounts.length > 0 ? lessonCounts[0].totalVideoLinks : 0;
+//             totalMaterials +=
+//               lessonCounts.length > 0 ? lessonCounts[0].totalMaterials : 0;
+
+//             const assignCounts = await Assign.countDocuments({
+//               module_id: module._id,
+//             });
+//             totalAssigns += assignCounts;
+
+//             const testCounts = await Quiz.countDocuments({
+//               module_id: module._id,
+//             });
+//             totalTests += testCounts;
+//           })
+//         );
+
+//         // Set the calculated counts to the course object
+//         course.lesson_counts = totalLessons;
+//         course.video_counts = totalVideos;
+//         course.material_counts = totalMaterials;
+//         course.assign_counts = totalAssigns;
+//         course.test_counts = totalTests;
+//       }
+//     };
+//     await processCourse(course[0]);
+//     res.status(200).json(course);
+//   } catch (error) {
+//     console.error(error); // Log the error for debugging
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 exports.getCourseById = async (req, res) => {
   try {
     const courseId = req.params.id;
+    const user = req.user;
 
     // Validate if courseId is a valid ObjectId
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
@@ -446,8 +597,18 @@ exports.getCourseById = async (req, res) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
+    let hasPurchased = false;
+    if (!!user) {
+      hasPurchased = await StudentCourse.exists({
+        course_id: courseId,
+        student_id: user.id,
+      });
+    }
+
     // Processing course data to include additional counts
     const processCourse = async (course) => {
+      course.purchased = !!hasPurchased;
+
       // Count the number of modules associated with the course
       const totalModules = await Module.countDocuments({
         course_id: course._id,
