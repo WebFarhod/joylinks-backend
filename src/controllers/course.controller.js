@@ -575,6 +575,7 @@ exports.getCourseById = async (req, res) => {
           name: 1,
           description: 1,
           price: 1,
+          photo: 1,
           teacher: {
             _id: "$teacher._id",
             name: "$teacher.name",
@@ -607,7 +608,6 @@ exports.getCourseById = async (req, res) => {
     }
 
     const processCourse = async (course) => {
-      console.log("hasPurchased", hasPurchased);
 
       course.purchased = !!hasPurchased;
 
@@ -680,7 +680,7 @@ exports.getCourseById = async (req, res) => {
     await processCourse(course);
     res.status(200).json(course);
   } catch (error) {
-    console.error(error); // Log the error for debugging
+    // console.error(error); // Log the error for debugging
     res.status(500).json({ error: error.message });
   }
 };
@@ -756,11 +756,9 @@ exports.getCourseByIdWithStatistics = async (req, res) => {
 };
 
 exports.getStatistics = async (req, res) => {
-  console.log("debugging");
 
   try {
     const { timeFrame } = req.query;
-    console.log(`Time Frame: ${timeFrame}`);
 
     const now = new Date();
 
@@ -768,21 +766,21 @@ exports.getStatistics = async (req, res) => {
     const totalStudents = await StudentCourse.distinct(
       "student_id"
     ).countDocuments();
-    console.log(`Total Students: ${totalStudents}`);
+    // console.log(`Total Students: ${totalStudents}`);
 
     // 2. Number of teachers (using correct query)
     const teacherRole = await Role.findOne({ name: "teacher" });
     const totalTeachers = await User.countDocuments({ role: teacherRole._id });
-    console.log(`Total Teachers: ${totalTeachers}`);
+    // console.log(`Total Teachers: ${totalTeachers}`);
 
     // 3. Number of mentors
     const mentorRole = await Role.findOne({ name: "mentor" });
     const totalMentors = await User.countDocuments({ role: mentorRole._id });
-    console.log(`Total Mentors: ${totalMentors}`);
+    // console.log(`Total Mentors: ${totalMentors}`);
 
     // 4. Total number of courses (active and inactive)
     const totalCourses = await Course.countDocuments();
-    console.log(`Total Courses: ${totalCourses}`);
+    // console.log(`Total Courses: ${totalCourses}`);
 
     const activeCourses = await Course.countDocuments({ is_active: true });
     const inactiveCourses = totalCourses - activeCourses;
@@ -849,7 +847,7 @@ exports.getStatistics = async (req, res) => {
       ongoingCourses,
     });
   } catch (error) {
-    console.error("Error fetching statistics:", error);
+    // console.error("Error fetching statistics:", error);
     res.status(500).json({
       message: "Error fetching statistics",
       error: error.message,
@@ -877,7 +875,7 @@ async function calculateRevenue(match) {
       },
     },
   ]);
-  console.log("Result after lookup and unwind:", result);
+  // console.log("Result after lookup and unwind:", result);
 
   return result[0] ? result[0].totalRevenue : 0;
 }
