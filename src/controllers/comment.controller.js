@@ -58,7 +58,7 @@ exports.getCommentsForCourse = async (req, res) => {
           text: 1,
           approved: 1,
           isRead: 1,
-          user: { firstname: 1, lastname: 1, _id: 1 },
+          user: { firstname: 1, lastname: 1, _id: 1, photo: 1 },
         },
       },
     ]);
