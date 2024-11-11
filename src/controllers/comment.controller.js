@@ -31,16 +31,29 @@ exports.addComment = async (req, res) => {
 
 // Get all approved comments for a specific course
 exports.getCommentsForCourse = async (req, res) => {
+  const { courseId, page = 1, limit = 10 } = req.query;
+  const user = req.user;
+
   try {
-    const { courseId, page = 1, limit = 10 } = req.query;
-
     const id = new mongoose.Types.ObjectId(courseId);
-
     let query = {};
-    query.course = id;
+
+    if (!courseId) {
+      if (!user || (user && user.role !== "admin")) {
+        return res.status(400).json({ message: "send comment id" });
+      }
+      query = {};
+    } else {
+      if (user && user.role === "admin") {
+        query = {};
+      } else {
+        query.approved = true;
+        query.course = id;
+      }
+    }
 
     const comments = await Comment.aggregate([
-      { $match: { course: id } },
+      { $match: query },
       {
         $lookup: {
           from: "users",
@@ -63,11 +76,11 @@ exports.getCommentsForCourse = async (req, res) => {
       },
     ]);
 
-    if (comments.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No comments found for this course" });
-    }
+    // if (comments.length === 0) {
+    //   return res
+    //     .status(404)
+    //     .json({ message: "No comments found for this course" });
+    // }
 
     res.status(200).json(comments);
   } catch (error) {

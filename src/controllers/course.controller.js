@@ -535,7 +535,7 @@ exports.getCourseById = async (req, res) => {
     }
 
     // Fetch the course details with aggregations
-    const course = await Course.aggregate([
+    const courseData = await Course.aggregate([
       {
         $match: {
           _id: new mongoose.Types.ObjectId(courseId),
@@ -592,21 +592,23 @@ exports.getCourseById = async (req, res) => {
       },
     ]);
 
-    // If no course is found, return 404
-    if (course?.length === 0) {
+    const course = courseData[0];
+
+    if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
 
     let hasPurchased = false;
-    if (!!user) {
+    if (user) {
       hasPurchased = await StudentCourse.exists({
         course_id: courseId,
         student_id: user.id,
       });
     }
 
-    // Processing course data to include additional counts
     const processCourse = async (course) => {
+      console.log("hasPurchased", hasPurchased);
+
       course.purchased = !!hasPurchased;
 
       // Count the number of modules associated with the course
@@ -615,13 +617,11 @@ exports.getCourseById = async (req, res) => {
       });
       course.module_counts = totalModules || 0;
 
-      // Count the number of students enrolled in the course
       const totalEnrolledStudents = await StudentCourse.countDocuments({
         course_id: course._id,
       });
       course.enrolled_students_counts = totalEnrolledStudents || 0;
 
-      // Fetch the modules and their related data
       const modules = await Module.find({ course_id: course._id });
       if (modules.length > 0) {
         let totalLessons = 0;
@@ -677,7 +677,7 @@ exports.getCourseById = async (req, res) => {
         course.test_counts = totalTests;
       }
     };
-    await processCourse(course[0]);
+    await processCourse(course);
     res.status(200).json(course);
   } catch (error) {
     console.error(error); // Log the error for debugging

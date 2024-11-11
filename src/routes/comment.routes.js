@@ -3,12 +3,14 @@ const router = express.Router();
 const commentController = require("../controllers/comment.controller");
 const { authenticateToken } = require("../middlewares/auth.middleware");
 const { checkRole } = require("../middlewares/role.middleware");
+const { checkUser } = require("../middlewares/user.middleware");
 
 router.post("/add", authenticateToken, commentController.addComment);
 
 router.get(
   "/",
   // authenticateToken,
+  checkUser,
   commentController.getCommentsForCourse
 );
 
@@ -98,7 +100,6 @@ module.exports = router;
  *     parameters:
  *       - in: query
  *         name: courseId
- *         required: true
  *         schema:
  *           type: string
  *         description: The ID of the course
