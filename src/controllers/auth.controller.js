@@ -36,7 +36,7 @@ exports.updateMe = async (req, res) => {
       req.user.id,
       { $set: updateFields },
       { new: true, runValidators: true }
-    ).select("-password -refreshToken");
+    ).populate("role").select("-password -refreshToken");
 
     if (!updatedUser) {
       return res.status(404).json({ error: "User not found" });
