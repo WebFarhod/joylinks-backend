@@ -1,25 +1,22 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
-
+const { Schema, model } = require("mongoose");
 const bannerSchema = new Schema(
   {
     title: {
       type: String,
       required: true,
     },
-    img: {
+    image: {
       type: String,
-      required: true,
+      required: false,
     },
-    course_id: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "courses",
-      required: true,
-    }, 
-    is_active: {
+    link: {
+      type: String,
+      require: false,
+    },
+    isActive: {
       type: Boolean,
       required: true,
-      default: true,
+      default: false,
     },
   },
   {
@@ -27,4 +24,5 @@ const bannerSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model("banners", bannerSchema);
+const Banner = model("banners", bannerSchema);
+module.exports = Banner;

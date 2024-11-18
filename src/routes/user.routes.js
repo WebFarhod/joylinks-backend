@@ -1,44 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user.controller");
-const { authenticateToken } = require("../middlewares/auth.middleware");
-const { checkRole } = require("../middlewares/role.middleware");
+const AdminMiddleware = require("../middlewares/admin.middleware");
+const RoleMiddleware = require("../middlewares/role.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
 
-router.post(
-  "/",
-  authenticateToken,
-  checkRole(["admin", "mentor"]),
-  userController.createUser
-);
+router.post("/", AdminMiddleware, userController.createUser);
 
-// Get all users
+router.get("/", RoleMiddleware(["admin", "teacher"]), userController.getUsers);
+
 router.get(
-  "/",
-  authenticateToken,
-  checkRole(["mentor", "admin", "teacher"]),
-  userController.getUsers
-);
-
-// Get a user by ID
-router.get("/:id",
-   authenticateToken, 
-  userController.getUserById);
-
-// Update a user by ID
-router.put(
   "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
-  userController.updateUserById
+  RoleMiddleware(["admin", "teacher"]),
+  userController.getUserById
 );
 
-// Delete a user by ID
-router.delete(
-  "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
-  userController.deleteUserById
-);
+router.put("/update-me", AuthMiddleware, userController.updateMe);
+
+router.put("/:id", AdminMiddleware, userController.updateUserById);
+
+router.delete("/:id", AdminMiddleware, userController.deleteUserById);
 
 module.exports = router;
 

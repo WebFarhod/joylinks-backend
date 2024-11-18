@@ -1,60 +1,38 @@
-// role.middleware.js
-const jwt = require("jsonwebtoken");
-const Role = require("../models/role.model");
-require("dotenv").config();
+const userService = require("../services/user.service");
+const BaseError = require("../utils/baseError");
+const jwt = require("../utils/jwt");
 
-const checkRole = (allowedRoles) => {
-  return (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
-    }
-
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-      if (err) {
-        return res.status(403).json({ message: "Forbidden" });
+const RoleMiddleware = (roles) => {
+  return async (req, res, next) => {
+    try {
+      const auth = req.headers.authorization;
+      if (!auth) {
+        return next(BaseError.UnauthorizedError());
+      }
+      const accressToken = auth.split(" ")[1];
+      if (!accressToken) {
+        return next(BaseError.UnauthorizedError());
+      }
+      const userData = jwt.validateAccessToken(accressToken);
+      if (!userData) {
+        return next(BaseError.UnauthorizedError());
       }
 
-      if (allowedRoles.includes(user.role)) {
+      const user = await userService.findUserById(userData.sub);
+      if (!user) {
+        return next(BaseError.UnauthorizedError());
+      }
+      if (roles.includes(user.role)) {
         req.user = user;
         next();
       } else {
-        res.status(403).json({ message: "Access denied" });
+        return next(BaseError.UnauthorizedError());
       }
-    });
+    } catch (error) {
+      console.log("role middleware", error);
+      return next(BaseError.UnauthorizedError());
+    }
   };
 };
 
-const checkAdmin = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Forbidden" });
-    }
-
-    const role = await Role.findById(user.role).select("id name");
-    if (!role) {
-      return res.status(404).json({ error: "Role not found" });
-    }
-
-    if (role.name === "admin") {
-      req.user = user;
-      next();
-    } else {
-      res.status(403).json({ message: "Access denied: Admins only" });
-    }
-  });
-};
-
-module.exports = {
-  checkRole,
-  checkAdmin
-};
+module.exports = RoleMiddleware;

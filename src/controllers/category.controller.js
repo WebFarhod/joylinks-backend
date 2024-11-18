@@ -1,92 +1,73 @@
-const Category = require("../models/category.model");
+const categoryService = require("../services/category.service");
 
-// Create a new category
-exports.createCategory = async (req, res) => {
-  try {
-    const category = new Category(req.body);
-    await category.save();
-    res.status(201).json(category);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
-// Get all categories
-exports.getCategories = async (req, res) => {
-  try {
-    let filter = {}
-    const { page = 1, limit = 10, is_active } = req.query;
-    const skip = (page - 1) * limit;
-
-    if (is_active) {
-      filter["is_active"] = true
+class CategoryController {
+  async createCategory(req, res, next) {
+    try {
+      const { name, isActive } = req.body;
+      if (!name) {
+        res.status(400).json({ error: "Talab qilinga malumotlar mavjud emas" });
+      }
+      const data = await categoryService.create(name, isActive);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-    const categories = await Category.aggregate([
-      { $match: filter },
-      { $skip: skip },
-      { $limit: parseInt(limit) },
-      {
-        $lookup: {
-          from: "courses",
-          localField: "_id",
-          foreignField: "category_id",
-          as: "courses",
-        },
-      },
-      { $sort: { name: 1 } }, // Optional: sort by category name in ascending order
-    ]);
-
-    const total = await Category.countDocuments();
-
-    res.status(200).json({
-      total,
-      currentPage: +page,
-      totalPages: Math.ceil(total / limit),
-      data: categories,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-// Get a category by ID
-exports.getCategoryById = async (req, res) => {
-  try {
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ error: "Category not found" });
+  async getCategories(req, res, next) {
+    try {
+      const user = req.user;
+      const data = await categoryService.getAll(user);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json(category);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-// Update a category by ID
-exports.updateCategoryById = async (req, res) => {
-  try {
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!category) {
-      return res.status(404).json({ error: "Category not found" });
+  async getCategoryById(req, res, next) {
+    try {
+      const user = req.user;
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({ message: "id mavjud emas." });
+      }
+      const data = await categoryService.get(user, id);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json(category);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
   }
-};
 
-// Delete a category by ID
-exports.deleteCategoryById = async (req, res) => {
-  try {
-    const category = await Category.findByIdAndDelete(req.params.id);
-    if (!category) {
-      return res.status(404).json({ error: "Category not found" });
+  async updateCategory(req, res, next) {
+    try {
+      const categoryData = req.body;
+      if (!categoryData) {
+        return res.status(200).json({
+          message: "Yangilash uchun hech qanday ma'lumot berilmagan.",
+        });
+      }
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({ message: "id mavjud emas." });
+      }
+      const data = await categoryService.update(id, categoryData);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-    res.status(200).json({ message: "Category deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
+
+  async deleteCategory(req, res, next) {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({ message: "id mavjud emas." });
+      }
+      const data = await categoryService.delete(id);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+module.exports = new CategoryController();

@@ -1,26 +1,36 @@
 const express = require("express");
 const router = express.Router();
+// const authController = require("../controllers/auth.controller");
+// const uploadImageMiddleware = require("../middlewares/photo.middleware");
+// const { checkRole } = require("../middlewares/role.middleware");
 const authController = require("../controllers/auth.controller");
-const uploadImageMiddleware = require("../middlewares/photo.middleware");
-const { checkRole } = require("../middlewares/role.middleware");
-const { authenticateToken } = require("../middlewares/auth.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
+// router.post(
+//   "/register",
+//   // uploadImageMiddleware,
+//   // checkRole(["admin"]),
+//   authController.register
+// );
+// router.post("/login", authController.login);
+// router.post("/refresh-token", authController.refreshToken);
+// router.post("/logout", authController.logout);
+// router.post(
+//   "/changerole/:id",
+//   checkRole(["admin"]),
+//   authController.changeUserRole
+// );
 
-router.post(
-  "/register",
-  uploadImageMiddleware,
-  // checkRole(["admin"]),
-  authController.register
-);
+// router.patch("/me", authenticateToken, authController.updateMe);
+
+router.post("/check-phone", authController.checkPhone);
+router.post("/register", authController.register);
+router.post("/verification", authController.verification);
+router.post("/resend-code", authController.resendCode);
+router.post("/forgot-password", authController.forgotPassword);
 router.post("/login", authController.login);
-router.post("/refresh-token", authController.refreshToken);
-router.post("/logout", authController.logout);
-router.post(
-  "/changerole/:id",
-  checkRole(["admin"]),
-  authController.changeUserRole
-);
-
-router.patch("/me", authenticateToken, authController.updateMe);
+router.get("/me", AuthMiddleware, authController.getUser);
+router.get("/refresh", authController.refresh);
+router.put("/new-password", authController.newPassword);
 
 module.exports = router;
 
@@ -420,4 +430,3 @@ module.exports = router;
  *                   type: string
  *                   example: "An error occurred while updating the profile"
  */
-

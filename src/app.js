@@ -1,4 +1,5 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const path = require("path");
 const routes = require("./routes/index");
@@ -6,7 +7,7 @@ const swaggerDocs = require("./utils/swagger");
 const helmet = require("helmet");
 const cors = require("cors");
 const morgan = require("morgan");
-
+const ErrorMiddleware = require("./middlewares/error.middleware");
 const app = express();
 
 app.all("/*", function (req, res, next) {
@@ -31,15 +32,18 @@ app.use(
   })
 );
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/src/uploads", express.static(path.join(__dirname, "uploads")));
-// Routes
+app.use(cookieParser());
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/api/src/uploads", express.static(path.join(__dirname, "uploads")));
+// // Routes
 app.use("/api", routes);
 app.get("/", (req, res) => {
   res.json({ name: "Hello World!" });
 });
 
 swaggerDocs(app);
+
+app.use(ErrorMiddleware);
 
 module.exports = app;

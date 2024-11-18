@@ -1,0 +1,16 @@
+exports.RegionsEnum = [
+  "Toshkent viloyati",
+  "Andijon viloyati",
+  "Buxoro viloyati",
+  "Samarqand viloyati",
+  "Farg‘ona viloyati",
+  "Jizzax viloyati",
+  "Qashqadaryo viloyati",
+  "Xorazm viloyati",
+  "Namangan viloyati",
+  "Navoiy viloyati",
+  "Surxondaryo viloyati",
+  "Qoraqalpog‘iston Respublikasi",
+  "Toshkent shahar",
+  null,
+];

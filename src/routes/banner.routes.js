@@ -1,22 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const bannerController = require("../controllers/banner.controller");
+const AdminMiddleware = require("../middlewares/admin.middleware");
+const UserMiddleware = require("../middlewares/user.middleware");
 
-// Create a new banner
-router.post("/", bannerController.createBanner);
+router.post("/", AdminMiddleware, bannerController.createBanner);
 
-// Get all banners
-router.get("/", bannerController.getBanners);
+router.get("/", UserMiddleware, bannerController.getBanners);
 
+router.get("/:id", UserMiddleware, bannerController.getBannerById);
 
-// Get a banner by ID
-router.get("/:id", bannerController.getBannerById);
+router.put("/:id", AdminMiddleware, bannerController.updateBanner);
 
-// Update a banner by ID
-router.put("/:id", bannerController.updateBanner);
-
-// Delete a banner by ID
-router.delete("/:id", bannerController.deleteBanner);
+router.delete("/:id", AdminMiddleware, bannerController.deleteBanner);
 
 module.exports = router;
 

@@ -1,23 +1,21 @@
-const mongoose = require("mongoose");
-
-const categorySchema = new mongoose.Schema(
+const { Schema, model } = require("mongoose");
+const categorySchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, "Category nomini berish majburiy"],
-      maxlength: 255,
+      required: true,
     },
-    is_active: {
+    isActive: {
       type: Boolean,
       required: true,
-      default: true,
+      default: false,
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 
-const Category = mongoose.model("categories", categorySchema);
+const Category = model("categories", categorySchema);
 
 module.exports = Category;

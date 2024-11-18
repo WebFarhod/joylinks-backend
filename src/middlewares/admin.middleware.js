@@ -1,8 +1,8 @@
+const userService = require("../services/user.service");
 const BaseError = require("../utils/baseError");
 const jwt = require("../utils/jwt");
-const userService = require("../services/user.service");
 
-const AuthMiddleware = async (req, res, next) => {
+const AdminMiddleware = async (req, res, next) => {
   try {
     const auth = req.headers.authorization;
     if (!auth) {
@@ -21,11 +21,15 @@ const AuthMiddleware = async (req, res, next) => {
     if (!user) {
       return next(BaseError.UnauthorizedError());
     }
-
+    if (user.role !== "admin") {
+      return next(BaseError.UnauthorizedError());
+    }
     req.user = userData;
     next();
   } catch (error) {
+    console.log("check admin middleware", error);
     return next(BaseError.UnauthorizedError());
   }
 };
-module.exports = AuthMiddleware;
+
+module.exports = AdminMiddleware;

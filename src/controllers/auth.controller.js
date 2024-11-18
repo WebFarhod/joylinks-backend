@@ -1,200 +1,153 @@
-const bcrypt = require("bcryptjs");
-const User = require("../models/user.model");
-const Role = require("../models/role.model");
-const {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} = require("../utils/jwt");
+const authService = require("../services/auth.service");
 
-exports.updateMe = async (req, res) => {
-  try {
-    const {
-      firstname,
-      lastname,
-      phone,
-      biography,
-      photo,
-      region,
-      birthdate,
-      district,
-      gender
-    } = req.body;
-
-    // Prepare fields to update
-    const updateFields = {
-      ...(firstname && { firstname }),
-      ...(lastname && { lastname }),
-      ...(birthdate && { birthdate }),
-      ...(phone && { phone, region, district }),
-      ...(biography && { biography }),
-      ...(photo && { photo }),
-      ...(gender && { gender })
-    };
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: updateFields },
-      { new: true, runValidators: true }
-    ).populate("role").select("-password -refreshToken");
-
-    if (!updatedUser) {
-      return res.status(404).json({ error: "User not found" });
+class AuthController {
+  async checkPhone(req, res, next) {
+    try {
+      const phone = req.body.phone;
+      if (!phone) {
+        return res
+          .status(400)
+          .json({ messge: "Talab qilinga malumotlar mavjud emas" });
+      }
+      const data = await authService.checkPhone(phone);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-
-    res.status(200).json({
-      message: "Profile updated successfully",
-      user: updatedUser,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-};
 
-exports.register = async (req, res) => {
-  try {
-    const {
-      phone,
-      firstname,
-      lastname,
-      password,
-      role,
-      region,
-      birthdate,
-      district,
-      photo,
-    } = req.body;
-
-    if (!phone || !password || !role) {
-      return res.status(400).json({ error: "Missing required fields" });
+  async register(req, res, next) {
+    try {
+      const { firstname, lastname, phone, password } = req.body;
+      if (!firstname || !lastname || !phone || !password) {
+        return res
+          .status(400)
+          .json({ messge: "Talab qilinga malumotlar mavjud emas" });
+      }
+      const data = await authService.register(
+        firstname,
+        lastname,
+        phone,
+        password
+      );
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
     }
-
-    // const hashedPassword = await bcrypt.hash(password, 10);
-    let userRole = await Role.findOne({ name: "user" }) || new Role({ name: "user" });
-    if (userRole.isNew) await userRole.save();
-
-    const user = new User({
-      phone,
-      firstname,
-      lastname,
-      password: password,
-      role: role || userRole.id,
-      region,
-      birthdate,
-      district,
-      photo: req.file ? req.file.path : photo,
-    });
-
-    await user.save();
-    const { password: _, ...userData } = user.toObject(); // Remove password from response
-
-    res.status(201).json({
-      message: "User registered successfully",
-      user: userData,
-    });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
   }
-};
 
-exports.changeUserRole = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { role } = req.body;
+  async verification(req, res, next) {
+    try {
+      const { code, phone } = req.body;
 
-    const roleData = await Role.findById(role);
-    if (!roleData) {
-      return res.status(400).json({ error: "Invalid role" });
+      if (!code || !phone) {
+        return res
+          .status(400)
+          .json({ messge: "Talab qilinga malumotlar mavjud emas" });
+      }
+      // const { message, user, accessToken, refreshToken, redirect } =
+      return await authService.verification(code, phone, res);
+      // res.cookie("refresh_token", refreshToken, {
+      //   httpOnly: true,
+      //   maxAge: 7 * 24 * 60 * 60 * 1000,
+      // });
+      // return res.json({ message, user, accessToken, redirect });
+    } catch (error) {
+      console.log("rr", error);
+
+      next(error);
     }
+  }
 
-    const user = await User.findByIdAndUpdate(id, { role }, { new: true }).select("-password -refreshToken");
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+  async resendCode(req, res, next) {
+    const { phone } = req.body;
+    if (!phone) {
+      return res.status(400).json({ error: "Tel raqam mavjud emas" });
     }
-
-    res.status(200).json({
-      message: "User role updated successfully",
-      user,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-exports.login = async (req, res) => {
-  try {
-    const { phone, password } = req.body;
-
-    const user = await User.findOne({ phone }).populate("role");
-    if (!user) {
-      return res.status(400).json({ error: "User not found" });
+    try {
+      const data = await authService.resendCode(phone);
+      return res.json(data);
+    } catch (error) {
+      next(error);
     }
+  }
 
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(400).json({ error: "Invalid password" });
+  async forgotPassword(req, res, next) {
+    const { phone } = req.body;
+    if (!phone) {
+      return res.status(400).json({ error: "Tel raqam mavjud emas" });
     }
-
-    const accessToken = generateAccessToken({ id: user._id, role: user.role.name });
-    const refreshToken = generateRefreshToken({ id: user._id, role: user.role.name });
-
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    const { password: _, refreshToken: __, ...userData } = user.toObject(); // Remove sensitive fields
-
-    res.status(200).json({
-      accessToken,
-      refreshToken,
-      user: userData,
-    });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+    try {
+      const data = await authService.forgotPassword(phone);
+      return res.json(data);
+    } catch (error) {
+      next(error);
+    }
   }
-};
 
-exports.refreshToken = async (req, res) => {
-  try {
-    const { token } = req.body;
+  async login(req, res, next) {
+    try {
+      const { phone, password } = req.body;
 
-    if (!token) return res.status(401).json({ error: "No token provided" });
-
-    const user = await User.findOne({ refreshToken: token });
-    if (!user) return res.status(403).json({ error: "Invalid refresh token" });
-
-    const userPayload = verifyRefreshToken(token);
-
-    const newAccessToken = generateAccessToken({
-      id: userPayload.id,
-      role: userPayload.role,
-    });
-    const newRefreshToken = generateRefreshToken({
-      id: userPayload.id,
-      role: userPayload.role,
-    });
-
-    user.refreshToken = newRefreshToken;
-    await user.save();
-
-    res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
-  } catch (error) {
-    res.status(403).json({ error: "Invalid token" });
+      if (!phone || !password) {
+        return res
+          .status(400)
+          .json({ messge: "Talab qilinga malumotlar mavjud emas mavjud emas" });
+      }
+      const { message, user, accessToken, refreshToken, redirect } =
+        await authService.login(phone, password);
+      res.cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      return res.json({ message, user, accessToken, redirect });
+    } catch (error) {
+      next(error);
+    }
   }
-};
 
-exports.logout = async (req, res) => {
-  try {
-    const { token } = req.body;
-    const user = await User.findOne({ refreshToken: token });
-
-    if (!user) return res.status(400).json({ error: "User not found" });
-
-    user.refreshToken = null;
-    await user.save();
-
-    res.status(200).json({ message: "User logged out successfully" });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  async getUser(req, res, next) {
+    try {
+      const user = req.user;
+      if (user) {
+        const data = await authService.getUser(user);
+        return res.json(data);
+      }
+    } catch (error) {
+      next(error);
+    }
   }
-};
+
+  async refresh(req, res, next) {
+    try {
+      const { refresh_token } = req.cookies;
+      const data = await authService.refresh(refresh_token);
+      return res.json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async newPassword(req, res, next) {
+    try {
+      const { phone, password, key } = req.body;
+
+      if (!phone || !password || !key) {
+        return res
+          .status(400)
+          .json({ messge: "Talab qilinga malumotlar mavjud emas mavjud emas" });
+      }
+      const { message, user, accessToken, refreshToken, redirect } =
+        await authService.newPassword(phone, password, key);
+      res.cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      return res.json({ message, user, accessToken, redirect });
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+module.exports = new AuthController();

@@ -1,7 +1,9 @@
-const jwt = require("jsonwebtoken");
-const { verifyAccessToken } = require("../utils/jwt");
+// const jwt = require("jsonwebtoken");
+// const { verifyAccessToken } = require("../utils/jwt");
 
-const checkUser = (req, res, next) => {
+const jwt = require("../utils/jwt");
+
+const UserMiddleware = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
@@ -11,12 +13,14 @@ const checkUser = (req, res, next) => {
   }
 
   try {
-    const user = verifyAccessToken(token);
+    const user = jwt.validateAccessToken(token);
     req.user = user;
     next();
   } catch (err) {
+    console.log("fg", err);
+
     return res.sendStatus(403);
   }
 };
 
-module.exports = { checkUser };
+module.exports = UserMiddleware;

@@ -1,65 +1,65 @@
 const express = require("express");
-const categoryRoutes = require("./category.routes");
-const roleRoutes = require("./role.routes");
-const userRoutes = require("./user.routes");
 const authRoutes = require("./auth.routes");
-const courseRoutes = require("./course.routes");
-const questionRoutes = require("./question.routes");
-const lessonRoutes = require("./lesson.routes");
-const reviewRoutes = require("./review.routes");
-const studentCourseRoutes = require("./studentCourse.routes");
-const assignRoutes = require("./assign.routes");
-const notificationRoutes = require("./notification.routes");
-const quizRoutes = require("./quiz.routes");
-const quizquestionsRoutes = require("./quizQuestion.routes");
 const bannerRoutes = require("./banner.routes");
-const moduleRoutes = require("./module.routes");
-const districtRoutes = require("./district.routes");
-const { uploadvideo } = require("../controllers/video.controller");
-const upload = require("../middlewares/uploadVideoConfig");
-const { authenticateToken } = require("../middlewares/auth.middleware");
-const { checkRole } = require("../middlewares/role.middleware");
-const { getStatisAllData } = require("../controllers/statisConroller");
-const uploadRoutes = require("./uploadRoutes");
-const resultsRoutes = require("./result.routes");
-const orderRoutes = require("./order.routes");
-// const transactionRouter = require("./transaction");
-const paymentRoutes = require("./payment.routes");
-const dashbordRoutes = require("./dashbord.routes");
-const commentRoutes = require("./comment.routes");
+const categoryRoutes = require("./category.routes");
+const userRoutes = require("./user.routes");
+// const roleRoutes = require("./role.routes");
+// const courseRoutes = require("./course.routes");
+// const questionRoutes = require("./question.routes");
+// const lessonRoutes = require("./lesson.routes");
+// const reviewRoutes = require("./review.routes");
+// const studentCourseRoutes = require("./studentCourse.routes");
+// const assignRoutes = require("./assign.routes");
+// const notificationRoutes = require("./notification.routes");
+// const quizRoutes = require("./quiz.routes");
+// const quizquestionsRoutes = require("./quizQuestion.routes");
+// const moduleRoutes = require("./module.routes");
+// const districtRoutes = require("./district.routes");
+// const { uploadvideo } = require("../controllers/video.controller");
+// const upload = require("../middlewares/uploadVideoConfig");
+// const { authenticateToken } = require("../middlewares/auth.middleware");
+// const { checkRole } = require("../middlewares/role.middleware");
+// const { getStatisAllData } = require("../controllers/statisConroller");
+// const uploadRoutes = require("./uploadRoutes");
+// const resultsRoutes = require("./result.routes");
+// const orderRoutes = require("./order.routes");
+// // const transactionRouter = require("./transaction");
+// const paymentRoutes = require("./payment.routes");
+// const dashbordRoutes = require("./dashbord.routes");
+// const commentRoutes = require("./comment.routes");
 
 const router = express.Router();
 
-router.use("/categories", categoryRoutes);
-router.use("/roles", roleRoutes);
-router.use("/users", userRoutes);
 router.use("/auth", authRoutes);
-router.use("/courses", courseRoutes);
-router.use("/questions", questionRoutes);
-router.use("/lessons", lessonRoutes);
-router.use("/modules", moduleRoutes);
-router.use("/reviews", reviewRoutes);
-router.use("/studentcourses", studentCourseRoutes);
-router.use("/assigns", assignRoutes);
-router.use("/notifications", notificationRoutes);
-router.use("/quizzes", quizRoutes);
-router.use("/quiz-questions", quizquestionsRoutes);
 router.use("/banners", bannerRoutes);
-router.use("/districts", districtRoutes);
-router.use("/statistics", getStatisAllData);
-router.use("/upload", uploadRoutes);
-router.use("/results", resultsRoutes);
-router.use("/orders", orderRoutes);
-router.use("/payment", paymentRoutes);
-router.use("/dashbord", dashbordRoutes);
-router.use("/comments", commentRoutes);
-router.use(
-  "/videos",
-  authenticateToken,
-  checkRole(["admin", "mentor", "teacher"]),
-  upload.single("video"),
-  uploadvideo
-);
+router.use("/categories", categoryRoutes);
+router.use("/users", userRoutes);
+// router.use("/roles", roleRoutes);
+// router.use("/courses", courseRoutes);
+// router.use("/questions", questionRoutes);
+// router.use("/lessons", lessonRoutes);
+// router.use("/modules", moduleRoutes);
+// router.use("/reviews", reviewRoutes);
+// router.use("/studentcourses", studentCourseRoutes);
+// router.use("/assigns", assignRoutes);
+// router.use("/notifications", notificationRoutes);
+// router.use("/quizzes", quizRoutes);
+// router.use("/quiz-questions", quizquestionsRoutes);
+// router.use("/districts", districtRoutes);
+// router.use("/statistics", getStatisAllData);
+// router.use("/upload", uploadRoutes);
+// router.use("/results", resultsRoutes);
+// router.use("/orders", orderRoutes);
+// router.use("/payment", paymentRoutes);
+// router.use("/dashbord", dashbordRoutes);
+// router.use("/comments", commentRoutes);
+// router.use(
+//   "/videos",
+//   authenticateToken,
+//   checkRole(["admin", "mentor", "teacher"]),
+//   upload.single("video"),
+//   uploadvideo
+// );
 // router.use("/payments/click", transactionRouter);
 
 module.exports = router;
