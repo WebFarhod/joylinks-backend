@@ -25,8 +25,7 @@ router.get("/", UserMiddleware, courseController.getAllCourses);
 //   courseController.getAdminCourses
 // );
 
-// Get a course by ID
-// router.get("/:id", checkUser, courseController.getCourseById);
+router.get("/:id", UserMiddleware, courseController.getCourseById);
 
 // Get course by ID along with statistics
 // router.get("/:id/statistics", courseController.getCourseByIdWithStatistics);
