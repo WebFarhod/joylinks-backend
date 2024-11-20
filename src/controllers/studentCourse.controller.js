@@ -1,7 +1,6 @@
 const StudentCourse = require("../models/studentCourse.model");
 const mongoose = require("mongoose");
 
-// Create a new enrollment
 exports.createEnrollment = async (req, res) => {
   try {
     const { courseId, studentId } = req.body;
@@ -106,9 +105,6 @@ exports.getEnrollmentById = async (req, res) => {
     const enrollment = await StudentCourse.findById(req.params.id)
       .populate("courseId")
       .populate("studentId");
-    // if (!enrollment) {
-    //   return res.status(404).json({ message: "Enrollment not found" });
-    // }
     res.status(200).json(enrollment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -121,12 +117,12 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
   try {
     const enrollments = await StudentCourse.aggregate([
       {
-        $match: { student_id: studentId },
+        $match: { studentId: studentId },
       },
       {
         $lookup: {
           from: "courses",
-          localField: "course_id",
+          localField: "courseId",
           foreignField: "_id",
           as: "course_info",
         },
@@ -134,28 +130,7 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
       {
         $unwind: "$course_info",
       },
-      // {
-      //   $lookup: {
-      //     from: "users",
-      //     localField: "student_id",
-      //     foreignField: "_id",
-      //     as: "user_info",
-      //   },
-      // },
-      // {
-      //   $unwind: "$user_info",
-      // },
-      // {
-      //   $lookup: {
-      //     from: "users",
-      //     localField: "course_info.teacher_id",
-      //     foreignField: "_id",
-      //     as: "teacher_info",
-      //   },
-      // },
-      // {
-      //   $unwind: "$teacher_info",
-      // },
+     
       {
         $project: {
           _id: 1,
@@ -208,7 +183,7 @@ exports.getMyCourse = async (req, res) => {
       {
         $lookup: {
           from: "courses",
-          localField: "course_id",
+          localField: "courseId",
           foreignField: "_id",
           as: "course_info",
         },
@@ -220,7 +195,7 @@ exports.getMyCourse = async (req, res) => {
       {
         $lookup: {
           from: "users",
-          localField: "course_info.teacher_id",
+          localField: "course_info.teacherId",
           foreignField: "_id",
           as: "teacher_info",
         },
@@ -251,8 +226,8 @@ exports.getMyCourse = async (req, res) => {
           duration: "$course_info.duration",
           level: "$course_info.level",
           photo: "$course_info.photo",
-          is_active: "$course_info.is_active",
-          is_top: "$course_info.is_top",
+          is_active: "$course_info.isActive",
+          is_top: "$course_info.isTop",
 
           teacher: {
             _id: "$teacher_info._id",
@@ -282,7 +257,7 @@ exports.getEnrollmentsByCourseId = async (req, res) => {
       {
         $lookup: {
           from: "users",
-          localField: "student_id",
+          localField: "studentId",
           foreignField: "_id",
           as: "student_info",
         },
