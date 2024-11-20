@@ -1,41 +1,23 @@
 const express = require("express");
 const router = express.Router();
 const commentController = require("../controllers/comment.controller");
-const { authenticateToken } = require("../middlewares/auth.middleware");
-const { checkRole } = require("../middlewares/role.middleware");
-const { checkUser } = require("../middlewares/user.middleware");
+const UserMiddleware = require("../middlewares/user.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
+const AdminMiddleware = require("../middlewares/admin.middleware");
 
-router.post("/add", authenticateToken, commentController.addComment);
+router.post("/add", AuthMiddleware, commentController.addComment);
 
-router.get(
-  "/",
-  // authenticateToken,
-  checkUser,
-  commentController.getCommentsForCourse
-);
-
-// router.put("/:commentId/read", commentController.markAsRead);
+router.get("/", UserMiddleware, commentController.getCommentsForCourse);
 
 router.put(
   "/:commentId/approve",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   commentController.approveComment
 );
 
-router.put(
-  "/:commentId/read",
-  authenticateToken,
-  checkRole(["admin"]),
-  commentController.readComment
-);
+router.put("/:commentId/read", AdminMiddleware, commentController.readComment);
 
-router.delete(
-  "/:commentId",
-  authenticateToken,
-  checkRole(["admin"]),
-  commentController.deleteComment
-);
+router.delete("/:commentId", AdminMiddleware, commentController.deleteComment);
 
 module.exports = router;
 

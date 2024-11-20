@@ -6,11 +6,13 @@ const userRoutes = require("./user.routes");
 const courseRoutes = require("./course.routes");
 const moduleRoutes = require("./module.routes");
 const lessonRoutes = require("./lesson.routes");
-// const uploadRoutes = require("./uploadRoutes");
+//////
+const commentRoutes = require("./comment.routes");
+const uploadRoutes = require("./uploadRoutes");
+const studentCourseRoutes = require("./studentCourse.routes");
 // const roleRoutes = require("./role.routes");
 // const questionRoutes = require("./question.routes");
 // const reviewRoutes = require("./review.routes");
-// const studentCourseRoutes = require("./studentCourse.routes");
 // const assignRoutes = require("./assign.routes");
 // const notificationRoutes = require("./notification.routes");
 // const quizRoutes = require("./quiz.routes");
@@ -26,7 +28,6 @@ const lessonRoutes = require("./lesson.routes");
 // // const transactionRouter = require("./transaction");
 // const paymentRoutes = require("./payment.routes");
 // const dashbordRoutes = require("./dashbord.routes");
-// const commentRoutes = require("./comment.routes");
 
 const router = express.Router();
 
@@ -37,11 +38,14 @@ router.use("/users", userRoutes);
 router.use("/courses", courseRoutes);
 router.use("/modules", moduleRoutes);
 router.use("/lessons", lessonRoutes);
-// router.use("/upload", uploadRoutes);
+////
+router.use("/comments", commentRoutes);
+router.use("/upload", uploadRoutes);
+router.use("/studentcourses", studentCourseRoutes);
+// router.use("/dashbord", dashbordRoutes);
 // router.use("/roles", roleRoutes);
 // router.use("/questions", questionRoutes);
 // router.use("/reviews", reviewRoutes);
-// router.use("/studentcourses", studentCourseRoutes);
 // router.use("/assigns", assignRoutes);
 // router.use("/notifications", notificationRoutes);
 // router.use("/quizzes", quizRoutes);
@@ -51,8 +55,6 @@ router.use("/lessons", lessonRoutes);
 // router.use("/results", resultsRoutes);
 // router.use("/orders", orderRoutes);
 // router.use("/payment", paymentRoutes);
-// router.use("/dashbord", dashbordRoutes);
-// router.use("/comments", commentRoutes);
 // router.use(
 //   "/videos",
 //   authenticateToken,

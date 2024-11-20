@@ -4,16 +4,20 @@ const mongoose = require("mongoose");
 // Create a new enrollment
 exports.createEnrollment = async (req, res) => {
   try {
+    const { courseId, studentId } = req.body;
     const studentCourse = await StudentCourse.findOne({
-      course_id: req.body.course_id,
-      student_id: req.body.student_id,
+      courseId,
+      studentId,
     });
 
     if (studentCourse) {
       res.status(400).json({ message: "already exists" });
     }
 
-    const enrollment = new StudentCourse(req.body);
+    const enrollment = new StudentCourse({
+      courseId,
+      studentId,
+    });
     await enrollment.save();
     res.status(201).json(enrollment);
   } catch (error) {
@@ -26,64 +30,32 @@ exports.getAllEnrollments = async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
-    const isActive = req.query.is_active; // Optional query parameter to filter by active status
-    console.log("test");
+    const isActive = req.query.isActive;
     const dd = await StudentCourse.find();
-    console.log("dd", dd);
-
-    // Build query object
     let query = {};
     if (isActive !== undefined) {
-      query.is_active = isActive === "true"; // Convert string to boolean
+      query.isActive = isActive;
     }
 
-    // Aggregate to get student enrollments with courses
     const studentCourses = await StudentCourse.aggregate([
       {
-        $match: query, // Apply the is_active filter if provided
+        $match: query,
       },
       {
         $lookup: {
           from: "courses",
-          localField: "course_id",
+          localField: "courseId",
           foreignField: "_id",
           as: "course_info",
         },
       },
       {
-        $unwind: "$course_info", // Unwind course info to process each course separately
+        $unwind: "$course_info",
       },
-      // {
-      //   $lookup: {
-      //     from: "users",
-      //     localField: "course_info.teacher_id",
-      //     foreignField: "_id",
-      //     as: "teacher_info",
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     _id: "$student_id", // Group by student_id
-      //     student: { $first: "$student_id" }, // Get student_id
-      //     courses: { $push: "$course_info" }, // Collect courses
-      //     count: { $sum: 1 }, // Count courses per student
-      //   },
-      // },
-      // {
-      //   $addFields: {
-      //     courses: {
-      //       $reduce: {
-      //         input: "$courses",
-      //         initialValue: [],
-      //         in: { $concatArrays: ["$$value", "$$this"] },
-      //       },
-      //     }, // Flatten the courses array
-      //   },
-      // },
       {
         $lookup: {
           from: "users",
-          localField: "student_id",
+          localField: "studentId",
           foreignField: "_id",
           as: "student_info",
         },
@@ -99,27 +71,25 @@ exports.getAllEnrollments = async (req, res) => {
       },
       {
         $project: {
-          _id: 1, // Return the StudentCourse document's _id (optional, for tracking enrollments)
-          student_id: "$student", // Only return student_id once
+          _id: 1,
+          studentId: "$student",
           student: {
-            id: "$student_info._id", // Student's actual _id from users collection
+            id: "$student_info._id",
             phone: "$student_info.phone",
             role: "$student_info.role",
             active: "$student_info.active",
             photo: "$student_info.photo",
           },
-          // course_info: 1,
           course: {
             id: "$course_info._id",
             name: "$course_info.name",
             price: "$course_info.price",
           },
-          // count: 1, // Return the number of courses the student is enrolled in
         },
       },
     ]);
 
-    const total = await StudentCourse.countDocuments(query); // Count with filter
+    const total = await StudentCourse.countDocuments(query);
     res.status(200).json({
       total,
       page,
@@ -131,15 +101,14 @@ exports.getAllEnrollments = async (req, res) => {
   }
 };
 
-// Get an enrollment by ID
 exports.getEnrollmentById = async (req, res) => {
   try {
     const enrollment = await StudentCourse.findById(req.params.id)
-      .populate("course_id")
-      .populate("student_id");
-    if (!enrollment) {
-      return res.status(404).json({ message: "Enrollment not found" });
-    }
+      .populate("courseId")
+      .populate("studentId");
+    // if (!enrollment) {
+    //   return res.status(404).json({ message: "Enrollment not found" });
+    // }
     res.status(200).json(enrollment);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -284,7 +253,7 @@ exports.getMyCourse = async (req, res) => {
           photo: "$course_info.photo",
           is_active: "$course_info.is_active",
           is_top: "$course_info.is_top",
-       
+
           teacher: {
             _id: "$teacher_info._id",
             firstname: "$teacher_info.firstname",

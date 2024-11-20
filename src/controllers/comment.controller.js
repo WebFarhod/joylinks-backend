@@ -3,7 +3,6 @@ const Comment = require("../models/comment.model");
 const Course = require("../models/course.model");
 const User = require("../models/user.model");
 
-// Add a comment to a course
 exports.addComment = async (req, res) => {
   try {
     const { courseId, text } = req.body;

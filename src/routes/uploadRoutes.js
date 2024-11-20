@@ -1,15 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const path = require("path");
+const fs = require("fs");
 const { uploadFile } = require("../controllers/uploadController");
-const { authenticateToken } = require("../middlewares/auth.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
+// const { authenticateToken } = require("../middlewares/auth.middleware");
+
+// Utility to check and create directories
+const ensureDirExists = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
 
 // Route for handling file uploads
-router.post("/:type", authenticateToken, (req, res) => {
+router.post("/:type", AuthMiddleware, (req, res) => {
   const { type } = req.params;
   console.log(req.params);
 
+  // Ensure only valid types are accepted
   if (["assigns", "questions", "banners", "files", "images"].includes(type)) {
+    // Ensure the directory exists
+    ensureDirExists(`./src/uploads/${type}`);
+
+    // Handle file upload
     uploadFile(type)(req, res);
   } else {
     res.status(400).json({ error: "Invalid upload type" });
@@ -19,14 +33,16 @@ router.post("/:type", authenticateToken, (req, res) => {
 // Route for retrieving files by filename
 router.get("/:type/:filename", (req, res) => {
   const { type, filename } = req.params;
+
+  // Ensure only valid types are accepted
   if (["assigns", "questions", "banners", "files", "images"].includes(type)) {
     const filePath = path.join(__dirname, "../../src/uploads", type, filename);
     console.log(filePath);
 
+    // Send the requested file
     res.sendFile(filePath, (err) => {
       if (err) {
-        console.log(err);
-
+        console.error(err);
         res.status(err.status || 500).json({ error: "File not found" });
       }
     });

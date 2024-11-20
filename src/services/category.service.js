@@ -9,7 +9,7 @@ class CategoryService {
       isActive: !!isActive,
     });
     await newCategory.save();
-    return { message: "Catedoriya yaratildi." };
+    return { message: "Bo'lim yaratildi." };
   }
 
   async getAll(user) {
@@ -57,7 +57,7 @@ class CategoryService {
     const updateData = {};
     if (categoryData.name) {
       if (typeof categoryData.name !== "string" || !categoryData.name.trim()) {
-        throw BaseError.BadRequest("Kategoriya nomi noto'g'ri formatda.");
+        throw BaseError.BadRequest("Bo'lim nomi noto'g'ri formatda.");
       }
       updateData.name = categoryData.name.trim();
     }
@@ -87,7 +87,7 @@ class CategoryService {
     }
 
     return {
-      message: "Kategoriya muvaffaqiyatli yangilandi.",
+      message: "Bo'lim muvaffaqiyatli yangilandi.",
       category,
     };
   }
@@ -95,9 +95,9 @@ class CategoryService {
   async delete(id) {
     const category = await Category.findByIdAndDelete(id);
     if (!category) {
-      throw BaseError.BadRequest("Category topilmadi.");
+      throw BaseError.BadRequest("Bo'lim topilmadi.");
     }
-    return { message: "Category o'chirildi" };
+    return { message: "Bo'lim o'chirildi" };
   }
 }
 

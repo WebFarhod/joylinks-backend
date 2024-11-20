@@ -4,44 +4,38 @@ const studentCourseController = require("../controllers/studentCourse.controller
 // const { authenticateToken } = require("../middlewares/auth.middleware");
 const { checkRole } = require("../middlewares/role.middleware");
 const { authenticateToken } = require("../middlewares/auth.middleware");
+const AdminMiddleware = require("../middlewares/admin.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
 
-router.post("/", checkRole("admin"), studentCourseController.createEnrollment);
+router.post("/", AdminMiddleware, studentCourseController.createEnrollment);
 
 router.get("/", studentCourseController.getAllEnrollments);
 
-router.get(
-  "/mycourses",
-  authenticateToken,
-  studentCourseController.getMyCourse
-);
+router.get("/mycourses", AuthMiddleware, studentCourseController.getMyCourse);
 
 router.get("/:id", studentCourseController.getEnrollmentById);
 
 router.get(
   "/bystudentid/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   studentCourseController.getEnrollmentsByStudentId
 );
 
 router.get(
   "/bycourseid/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   studentCourseController.getEnrollmentsByCourseId
 );
 
 router.put(
   "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   studentCourseController.updateEnrollmentById
 );
 
 router.delete(
   "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   studentCourseController.deleteEnrollmentById
 );
 
