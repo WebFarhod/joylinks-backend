@@ -3,12 +3,12 @@ const Banner = require("../models/banner.model");
 const BaseError = require("../utils/baseError");
 
 class BannerService {
-  async create(title, image, link, isActive) {
+  async create(title, image = null, link = null, isActive = false) {
     const newBanner = new Banner({
-      title,
-      image: image || null,
-      link: link || null,
-      isActive: isActive || false,
+      title: title.trim(),
+      image,
+      link,
+      isActive,
     });
     await newBanner.save();
     return { message: "Banner yaratildi." };

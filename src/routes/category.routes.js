@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const categoryController = require("../controllers/category.controller");
-const AdminMiddleware = require("../middlewares/role.middleware");
+// const AdminMiddleware = require("../middlewares/role.middleware");
 const UserMiddleware = require("../middlewares/user.middleware");
+const AdminMiddleware = require("../middlewares/admin.middleware");
 
 router.post("/", AdminMiddleware, categoryController.createCategory);
 
