@@ -72,41 +72,46 @@ class UserService {
       { $match: matchStage },
       {
         $lookup: {
-          from: "courses", // Assuming there is a 'courses' collection
+          from: "users", // Assuming there is a 'courses' collection
           localField: "_id",
-          foreignField: "teacher_id", // Adjust according to the relationship
-          as: "courses",
+          foreignField: "createBy", // Adjust according to the relationship
+          as: "createBy",
         },
       },
+      // {
+      //   $lookup: {
+      //     from: "roles", // The collection to join with
+      //     localField: "role", // Field from the `users` collection
+      //     foreignField: "_id", // Field from the `roles` collection
+      //     as: "roleDetails", // Output field
+      //   },
+      // },
+      // {
+      //   $unwind: {
+      //     path: "$roleDetails", // Deconstruct the `roleDetails` array
+      //     preserveNullAndEmptyArrays: true, // Include users without a role
+      //   },
+      // },
       {
-        $lookup: {
-          from: "roles", // The collection to join with
-          localField: "role", // Field from the `users` collection
-          foreignField: "_id", // Field from the `roles` collection
-          as: "roleDetails", // Output field
-        },
-      },
-      {
-        $unwind: {
-          path: "$roleDetails", // Deconstruct the `roleDetails` array
-          preserveNullAndEmptyArrays: true, // Include users without a role
-        },
-      },
-      {
-        $match: role ? { "roleDetails.name": role } : {}, // Filter by role name if provided
+        $match: role ? { role } : {}, // Filter by role name if provided
       },
       {
         $project: {
           firstname: 1,
           lastname: 1,
           phone: 1,
-          role: {
-            name: "$roleDetails.name",
-            _id: "$roleDetails._id",
-          },
+          role: 1,
           biography: 1,
           photo: 1,
-          courseCount: { $size: "$courses" }, // Get the number of courses
+          balance: 1,
+          region: 1,
+          district: 1,
+          birthdate: 1,
+          gender: 1,
+          isActive: 1,
+          isApproved: 1,
+          isBlock: 1,
+          isApproved: 1,
         },
       },
       { $skip: (page - 1) * parseInt(limit) },
