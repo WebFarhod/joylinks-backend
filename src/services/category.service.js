@@ -6,7 +6,7 @@ class CategoryService {
   async create(name, isActive) {
     const newCategory = new Category({
       name,
-      isActive: isActive || false,
+      isActive: !!isActive,
     });
     await newCategory.save();
     return { message: "Catedoriya yaratildi." };
@@ -51,24 +51,44 @@ class CategoryService {
   }
 
   async update(id, categoryData) {
+    if (!id) {
+      throw BaseError.BadRequest("ID ko'rsatilishi shart.");
+    }
     const updateData = {};
-    if (categoryData.name) updateData.name = categoryData.name;
-    if (typeof categoryData.isActive !== "undefined")
+    if (categoryData.name) {
+      if (typeof categoryData.name !== "string" || !categoryData.name.trim()) {
+        throw BaseError.BadRequest("Kategoriya nomi noto'g'ri formatda.");
+      }
+      updateData.name = categoryData.name.trim();
+    }
+
+    if (typeof categoryData.isActive !== "undefined") {
+      if (typeof categoryData.isActive !== "boolean") {
+        throw BaseError.BadRequest(
+          "isActive qiymati true yoki false bo'lishi kerak."
+        );
+      }
       updateData.isActive = categoryData.isActive;
+    }
 
     if (Object.keys(updateData).length === 0) {
       throw BaseError.BadRequest(
         "Yangilash uchun hech qanday ma'lumot berilmagan."
       );
     }
+
     const category = await Category.findByIdAndUpdate(id, updateData, {
       new: true,
+      runValidators: true,
     });
+
     if (!category) {
-      throw BaseError.NotFoundError("Category topilmadi.");
+      throw BaseError.NotFoundError("Kategoriya topilmadi.");
     }
+
     return {
-      message: "Category muvaffaqiyatli yangilandi.",
+      message: "Kategoriya muvaffaqiyatli yangilandi.",
+      category,
     };
   }
 
