@@ -53,7 +53,9 @@ class CategoryService {
   async update(id, categoryData) {
     const updateData = {};
     if (categoryData.name) updateData.name = categoryData.name;
-    if (categoryData.isActive) updateData.isActive = categoryData.isActive;
+    if (typeof categoryData.isActive !== "undefined")
+      updateData.isActive = categoryData.isActive;
+
     if (Object.keys(updateData).length === 0) {
       throw BaseError.BadRequest(
         "Yangilash uchun hech qanday ma'lumot berilmagan."

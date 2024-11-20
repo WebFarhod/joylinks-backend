@@ -61,7 +61,8 @@ class BannerService {
     if (bannerData.title) updateData.title = bannerData.title;
     if (bannerData.image) updateData.image = bannerData.image;
     if (bannerData.link) updateData.link = bannerData.link;
-    if (bannerData.isActive) updateData.isActive = bannerData.isActive;
+    if (typeof bannerData.isActive !== "undefined")
+      updateData.isActive = bannerData.isActive;
     if (Object.keys(updateData).length === 0) {
       throw BaseError.BadRequest(
         "Yangilash uchun hech qanday ma'lumot berilmagan."

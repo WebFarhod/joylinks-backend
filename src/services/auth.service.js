@@ -54,6 +54,7 @@ class AuthService {
         return {
           message: "Parolingizni kiriting.",
           redirect: "login",
+          phone,
         };
       } else {
         if (user.isApproved) {
@@ -68,11 +69,13 @@ class AuthService {
           return {
             message: "Tasdiqlash kodi yuborildi.",
             redirect: "verification",
+            phone,
           };
         } else {
           return {
             message: "Tizimdam ro'yxatdan o'tishingiz mumkin.",
             redirect: "register",
+            phone,
           };
         }
       }
@@ -80,6 +83,7 @@ class AuthService {
       return {
         message: "Tizimdam ro'yxatdan o'tishingiz mumkin.",
         redirect: "register",
+        phone,
       };
     }
   }

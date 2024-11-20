@@ -5,6 +5,7 @@ class UserController {
   async createUser(req, res, next) {
     try {
       const { firstname, lastname, phone, role, password } = req.body;
+      const user = req.user;
       if (!firstname || !lastname || !phone || !role || !password) {
         return res
           .status(400)
@@ -15,7 +16,8 @@ class UserController {
         lastname,
         phone,
         role,
-        password
+        password,
+        user
       );
       return res.status(200).json(data);
     } catch (error) {
@@ -54,24 +56,21 @@ class UserController {
 
   async updateUserById(req, res, next) {
     try {
-      const user = req.body;
-      if (!user) {
+      if (!req.body) {
         return res.status(400).json({
           message: "Yangilash uchun hech qanday ma'lumot berilmagan.",
         });
       }
-      const data = await userService.update(req.params.id, req.body);
+      const data = await userService.update(req.params.id, req.body, req.user);
       return res.status(200).json(data);
     } catch (error) {
-      // console.log("error", error);
-
       next(error);
     }
   }
 
   async deleteUserById(req, res, next) {
     try {
-      const data = await userService.delete(req.params.id);
+      const data = await userService.delete(req.params.id, req.user);
       return res.status(200).json(data);
     } catch (error) {
       next(error);

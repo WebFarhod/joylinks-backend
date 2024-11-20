@@ -1,21 +1,37 @@
 const express = require("express");
 const router = express.Router();
 const lessonController = require("../controllers/lesson.controller");
+const RoleMiddleware = require("../middlewares/role.middleware");
 
-// Create a new lesson
-router.post("/", lessonController.createLesson);
+router.post(
+  "/",
+  RoleMiddleware(["admin", "teacher"]),
+  lessonController.createLesson
+);
 
-// Get all lessons
-router.get("/", lessonController.getLessons);
+router.get(
+  "/",
+  RoleMiddleware(["admin", "teacher", "mentor"]),
+  lessonController.getLessons
+);
 
-// Get a lesson by ID
-router.get("/:id", lessonController.getLessonById);
+router.get(
+  "/:id",
+  RoleMiddleware(["admin", "teacher", "mentor"]),
+  lessonController.getLessonById
+);
 
-// Update a lesson by ID
-router.put("/:id", lessonController.updateLessonById);
+router.put(
+  "/:id",
+  RoleMiddleware(["admin", "teacher"]),
+  lessonController.updateLessonById
+);
 
-// Delete a lesson by ID
-router.delete("/:id", lessonController.deleteLessonById);
+router.delete(
+  "/:id",
+  RoleMiddleware(["admin", "teacher"]),
+  lessonController.deleteLessonById
+);
 
 module.exports = router;
 

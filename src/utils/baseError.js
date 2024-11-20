@@ -15,8 +15,6 @@ class BaseError extends Error {
   }
 
   static NotFoundError(message) {
-    console.log("test");
-
     return new BaseError(404, message);
   }
 

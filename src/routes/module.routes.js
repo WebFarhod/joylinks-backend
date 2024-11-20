@@ -1,22 +1,37 @@
 const express = require("express");
 const router = express.Router();
 const moduleController = require("../controllers/module.controller");
-// const { authenticateToken } = require("../middlewares/auth.middleware");
+const RoleMiddleware = require("../middlewares/role.middleware");
 
-// Create a new module
-router.post("/", moduleController.createModule);
+router.post(
+  "/",
+  RoleMiddleware(["admin", "teacher"]),
+  moduleController.createModule
+);
 
-// Get all modules
-router.get("/", moduleController.getModules);
+router.get(
+  "/",
+  RoleMiddleware(["admin", "teacher", "mentor"]),
+  moduleController.getModules
+);
 
-// Get a module by ID
-router.get("/:id", moduleController.getModuleById);
+router.get(
+  "/:id",
+  RoleMiddleware(["admin", "teacher", "mentor"]),
+  moduleController.getModuleById
+);
 
-// Update a module by ID
-router.put("/:id", moduleController.updateModuleById);
+router.put(
+  "/:id",
+  RoleMiddleware(["admin", "teacher"]),
+  moduleController.updateModuleById
+);
 
-// Delete a module by ID
-router.delete("/:id", moduleController.deleteModuleById);
+router.delete(
+  "/:id",
+  RoleMiddleware(["admin", "teacher"]),
+  moduleController.deleteModuleById
+);
 
 module.exports = router;
 

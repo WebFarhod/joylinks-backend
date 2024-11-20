@@ -8,7 +8,7 @@ class BannerController {
         res.status(400).json({ error: "Talab qilinga malumotlar mavjud emas" });
       }
       const data = await bannerService.create(title, image, link, isActive);
-      return res.status(200).json(data);
+      return res.status(201).json(data);
     } catch (error) {
       next(error);
     }

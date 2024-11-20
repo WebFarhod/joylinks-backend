@@ -11,18 +11,85 @@ const mongoose = require("mongoose");
 const Assign = require("../models/assign.model");
 const Quiz = require("../models/quiz.model");
 const { ObjectId } = require("mongodb");
+const courseService = require("../services/course.service");
 
-// Create a new course
-exports.createCourse = async (req, res) => {
-  try {
-    req.body.duration = convertToSeconds(req.body.duration);
-    const course = new Course(req.body);
-    await course.save();
-    res.status(201).json(course);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
+class CourseController {
+  async createCourse(req, res, next) {
+    try {
+      const { name, description, price, categoryId, teacherId, mentorId } =
+        req.body;
+      const user = req.user;
+      if (user.role == "admin") {
+        if (
+          !name ||
+          !description ||
+          !price ||
+          !categoryId ||
+          !teacherId ||
+          !mentorId
+        ) {
+          return res
+            .status(400)
+            .json({ error: "Talab qilinga malumotlar mavjud emas" });
+        }
+      } else {
+        if (name || !description || !price || !categoryId || !mentorId) {
+          return res
+            .status(400)
+            .json({ error: "Talab qilinga malumotlar mavjud emas" });
+        }
+      }
+      const data = await courseService.create(res.body, user);
+      return res.status(201).json(data);
+    } catch (error) {
+      next(error);
+    }
   }
-};
+
+  async getAllCourses(req, res, next) {
+    try {
+      const data = await courseService.getAll(req.query, req.user);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteCourseById(req, res, next) {
+    try {
+      const data = await courseService.deleteById(req.params.id, req.user);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCourseById(req, res, next) {
+    try {
+      const data = await courseService.updateById(
+        req.body,
+        req.params.id,
+        req.user
+      );
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+}
+
+module.exports = new CourseController();
+// Create a new course
+// exports.createCourse = async (req, res) => {
+//   try {
+//     req.body.duration = convertToSeconds(req.body.duration);
+//     const course = new Course(req.body);
+//     await course.save();
+//     res.status(201).json(course);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
 
 // Get public courses with filters
 exports.getPublicCourses = async (req, res) => {
@@ -32,11 +99,11 @@ exports.getPublicCourses = async (req, res) => {
       teacher,
       mentor,
       category,
-      level,
-      minDuration,
-      maxDuration,
-      minPrice,
-      maxPrice,
+      // level,
+      // minDuration,
+      // maxDuration,
+      // minPrice,
+      // maxPrice,
       search,
       page = 1,
       limit = 10,
@@ -685,35 +752,35 @@ exports.getCourseById = async (req, res) => {
 };
 
 // Update a course by ID
-exports.updateCourseById = async (req, res) => {
-  try {
-    req.body.duration = convertToSeconds(req.body.duration);
-    const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (course) {
-      res.status(200).json(course);
-    } else {
-      res.status(404).json({ message: "Course not found" });
-    }
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
+// exports.updateCourseById = async (req, res) => {
+//   try {
+//     req.body.duration = convertToSeconds(req.body.duration);
+//     const course = await Course.findByIdAndUpdate(req.params.id, req.body, {
+//       new: true,
+//     });
+//     if (course) {
+//       res.status(200).json(course);
+//     } else {
+//       res.status(404).json({ message: "Course not found" });
+//     }
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// };
 
-// Delete a course by ID
-exports.deleteCourseById = async (req, res) => {
-  try {
-    const course = await Course.findByIdAndDelete(req.params.id);
-    if (course) {
-      res.status(200).json({ message: "Course deleted" });
-    } else {
-      res.status(404).json({ message: "Course not found" });
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+// // Delete a course by ID
+// exports.deleteCourseById = async (req, res) => {
+//   try {
+//     const course = await Course.findByIdAndDelete(req.params.id);
+//     if (course) {
+//       res.status(200).json({ message: "Course deleted" });
+//     } else {
+//       res.status(404).json({ message: "Course not found" });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
 
 exports.getCourseByIdWithStatistics = async (req, res) => {
   try {

@@ -84,6 +84,11 @@ const userSchema = new Schema(
       ref: "auth",
       required: true,
     },
+    createBy: {
+      type: Schema.Types.ObjectId,
+      ref: "users",
+      required: false,
+    },
   },
   { timestamps: true }
 );

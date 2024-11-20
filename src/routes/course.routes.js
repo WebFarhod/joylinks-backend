@@ -4,54 +4,45 @@ const courseController = require("../controllers/course.controller");
 const { authenticateToken } = require("../middlewares/auth.middleware");
 const { checkRole } = require("../middlewares/role.middleware");
 const { checkUser } = require("../middlewares/user.middleware");
+const RoleMiddleware = require("../middlewares/role.middleware");
+const AdminMiddleware = require("../middlewares/admin.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
+const UserMiddleware = require("../middlewares/user.middleware");
 
-// Create a new course
 router.post(
   "/",
-  authenticateToken,
-  checkRole(["admin", "mentor", "teacher"]),
+  RoleMiddleware(["admin", "teacher"]),
   courseController.createCourse
 );
 
-// Get all public courses with query filters
-router.get(
-  "/public",
-  (req, res, next) => {
-    next();
-  },
-  courseController.getPublicCourses
-);
+router.get("/", UserMiddleware, courseController.getAllCourses);
 
 // Admin API routes to get courses
-router.get(
-  "/admin",
-  authenticateToken,
-  checkRole(["admin", "mentor", "teacher"]),
-  courseController.getAdminCourses
-);
+// router.get(
+//   "/admin",
+//   authenticateToken,
+//   checkRole(["admin", "mentor", "teacher"]),
+//   courseController.getAdminCourses
+// );
 
 // Get a course by ID
-router.get("/:id", checkUser, courseController.getCourseById);
+// router.get("/:id", checkUser, courseController.getCourseById);
 
 // Get course by ID along with statistics
-router.get("/:id/statistics", courseController.getCourseByIdWithStatistics);
+// router.get("/:id/statistics", courseController.getCourseByIdWithStatistics);
 
 // Get statistics for all courses
-router.get("/statistics", courseController.getStatistics);
+// router.get("/statistics", courseController.getStatistics);
 
-// Update a course by ID
 router.put(
   "/:id",
-  authenticateToken,
-  checkRole(["admin", "mentor", "teacher"]),
+  RoleMiddleware(["admin", "teacher"]),
   courseController.updateCourseById
 );
 
-// Delete a course by ID
 router.delete(
   "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  RoleMiddleware(["admin", "teacher"]),
   courseController.deleteCourseById
 );
 

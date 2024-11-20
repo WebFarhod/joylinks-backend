@@ -5,21 +5,33 @@ const AdminMiddleware = require("../middlewares/admin.middleware");
 const RoleMiddleware = require("../middlewares/role.middleware");
 const AuthMiddleware = require("../middlewares/auth.middleware");
 
-router.post("/", AdminMiddleware, userController.createUser);
-
-router.get("/", RoleMiddleware(["admin", "teacher"]), userController.getUsers);
+router.post(
+  "/",
+  RoleMiddleware(["admin", "teacher"]),
+  userController.createUser
+);
 
 router.get(
-  "/:id",
-  RoleMiddleware(["admin", "teacher"]),
-  userController.getUserById
+  "/",
+  RoleMiddleware(["admin", "teacher", "mentor"]),
+  userController.getUsers
 );
+
+router.get("/:id", AdminMiddleware, userController.getUserById);
 
 router.put("/update-me", AuthMiddleware, userController.updateMe);
 
-router.put("/:id", AdminMiddleware, userController.updateUserById);
+router.put(
+  "/:id",
+  RoleMiddleware(["admin", "teacher"]),
+  userController.updateUserById
+);
 
-router.delete("/:id", AdminMiddleware, userController.deleteUserById);
+router.delete(
+  "/:id",
+  RoleMiddleware(["admin", "teacher"]),
+  userController.deleteUserById
+);
 
 module.exports = router;
 

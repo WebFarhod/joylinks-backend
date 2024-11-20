@@ -16,16 +16,23 @@ class UserService {
     return await User.findById(id);
   }
 
-  async create(firstname, lastname, phone, role, password) {
-    const user = await User.findOne({ phone }).populate("auth");
-    if (user) {
+  async create(firstname, lastname, phone, role, password, user) {
+    const existUser = await User.findOne({ phone }).populate("auth");
+    if (existUser) {
       throw BaseError.BadRequest(
         `${phone} ushbu raqam tizimda ro'yxatdan o'tgan!`
       );
     }
-    const roles = ["teacher", "mentor"];
-    if (roles.includes(data.role)) {
-      throw BaseError.BadRequest(`${data.role} ruhsat etilmagan role`);
+    if (user.role === "admin") {
+      const roles = ["teacher", "mentor"];
+      if (!roles.includes(role)) {
+        throw BaseError.BadRequest(`${role} ruhsat etilmagan role`);
+      }
+    } else {
+      const roles = ["mentor"];
+      if (!roles.includes(role)) {
+        throw BaseError.BadRequest(`${role} ruhsat etilmagan role`);
+      }
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newAuth = new Auth({ password: hashedPassword });
@@ -36,6 +43,7 @@ class UserService {
       phone,
       role,
       isApproved: true,
+      createBy: user.sub,
       auth: newAuth._id,
     });
     await newUser.save();
@@ -139,8 +147,29 @@ class UserService {
     if (data.biography) updateData.biography = data.biography;
     if (data.region) updateData.region = data.region;
     if (data.district) updateData.district = data.district;
-    if (data.birthdate) updateData.birthdate = data.birthdate;
-    if (data.gender) updateData.gender = data.gender;
+    if (data.birthdate) {
+      if (!data.birthdate) {
+        return { valid: false, message: "Birthdate berilmagan." };
+      }
+
+      const date = new Date(data.birthdate);
+      if (isNaN(date.getTime())) {
+        throw BaseError.BadRequest("Noto'g'ri sana formati.");
+      }
+
+      const now = new Date();
+      if (date > now) {
+        throw BaseError.BadRequest("Noto'g'ri sana formati.");
+      }
+      updateData.birthdate = data.birthdate;
+    }
+    if (data.gender) {
+      const gender = ["male", "female"];
+      if (!gender.includes(data.gender)) {
+        throw BaseError.BadRequest(`${data.gender} ruhsat etilmagan tur`);
+      }
+      updateData.gender = data.gender;
+    }
     if (Object.keys(updateData).length === 0) {
       throw BaseError.BadRequest(
         "Yangilash uchun hech qanday ma'lumot berilmagan."
@@ -158,11 +187,15 @@ class UserService {
     };
   }
 
-  async update(id, data) {
+  async update(id, data, user) {
     if (!id) {
       throw BaseError.NotFoundError("Id mavjud emas");
     }
-    const userCheck = await User.findById(id);
+    let filter = { _id: id };
+    if (user.role !== "admin") {
+      filter.createBy = user.sub;
+    }
+    const userCheck = await User.findOne(filter);
     if (!userCheck) {
       throw BaseError.NotFoundError("User topilmadi.");
     }
@@ -170,41 +203,74 @@ class UserService {
       throw BaseError.BadRequest("Ruhsat berilmagan.");
     }
 
-    const roles = ["teacher", "mentor", "student"];
-    console.log(data.role, roles.includes(data.role));
-    if (!roles.includes(data.role)) {
-      throw BaseError.BadRequest(`${data.role} ruhsat etilmagan role`);
-    }
-    const updateData = {};
-    if (data.role) updateData.role = data.role;
-    if (data.balance) updateData.balance = data.balance;
-    if (data.isBlock) updateData.isBlock = data.isBlock;
-    if (Object.keys(updateData).length === 0) {
-      throw BaseError.BadRequest(
-        "Yangilash uchun hech qanday ma'lumot berilmagan."
-      );
-    }
-    const user = await User.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+    if (user.role === "admin") {
+      const roles = ["teacher", "mentor", "student"];
+      console.log(data.role, roles.includes(data.role));
+      if (!roles.includes(data.role)) {
+        throw BaseError.BadRequest(`${data.role} ruhsat etilmagan role`);
+      }
+      const updateData = {};
+      if (data.role) updateData.role = data.role;
+      if (data.balance) updateData.balance = data.balance;
+      if (typeof data.isBlock !== "undefined")
+        updateData.isBlock = data.isBlock;
+      if (Object.keys(updateData).length === 0) {
+        throw BaseError.BadRequest(
+          "Yangilash uchun hech qanday ma'lumot berilmagan."
+        );
+      }
+      const existUser = await User.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
 
-    if (!user) {
-      throw BaseError.NotFoundError("User topilmadi.");
+      if (!existUser) {
+        throw BaseError.NotFoundError("User topilmadi.");
+      }
+      return {
+        message: "User muvaffaqiyatli yangilandi.",
+      };
+    } else {
+      const updateData = {};
+      if (typeof data.isBlock !== "undefined")
+        updateData.isBlock = data.isBlock;
+      if (Object.keys(updateData).length === 0) {
+        throw BaseError.BadRequest(
+          "Yangilash uchun hech qanday ma'lumot berilmagan."
+        );
+      }
+      const existUser = await User.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
+
+      if (!existUser) {
+        throw BaseError.NotFoundError("User topilmadi.");
+      }
+      return {
+        message: "User muvaffaqiyatli yangilandi.",
+      };
     }
-    return {
-      message: "User muvaffaqiyatli yangilandi.",
-    };
   }
 
-  async delete(id) {
+  async delete(id, user) {
     if (!id) {
       throw BaseError.NotFoundError("Id mavjud emas");
     }
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      throw BaseError.NotFoundError("Banner topilmadi.");
+    const filter = { _id: id };
+    if (user.role !== admin) {
+      filter.createBy = user.sub;
     }
-    await Auth.findByIdAndDelete(user.auth);
+    let existUser = await User.findOne(filter);
+    if (!userCheck) {
+      throw BaseError.NotFoundError("User topilmadi.");
+    }
+    if (userCheck.role === "admin") {
+      throw BaseError.BadRequest("Ruhsat berilmagan.");
+    }
+    existUser = await User.findOneAndDelete(filter);
+    if (!existUser) {
+      throw BaseError.NotFoundError("User topilmadi.");
+    }
+    await Auth.findByIdAndDelete(existUser.auth);
 
     return { message: "User o'chirildi" };
   }
