@@ -1,41 +1,44 @@
 const express = require("express");
 const router = express.Router();
 const notificationController = require("../controllers/notification.controller");
-const { authenticateToken } = require("../middlewares/auth.middleware");
-const { checkRole } = require("../middlewares/role.middleware");
+const AdminMiddleware = require("../middlewares/admin.middleware");
+const AuthMiddleware = require("../middlewares/auth.middleware");
+const UserMiddleware = require("../middlewares/user.middleware");
+// const { authenticateToken } = require("../middlewares/auth.middleware");
+// const { checkRole } = require("../middlewares/role.middleware");
 // Routes for Notifications
 router.post(
   "/",
-  authenticateToken,
-  checkRole(["admin"]),
+  // authenticateToken,
+  // checkRole(["admin"]),
+  AdminMiddleware,
   notificationController.createNotification
 );
 
 router.get(
   "/",
-  authenticateToken,
-  // checkRole(["admin"]),
+  // authenticateToken,
+  // // checkRole(["admin"]),
+  UserMiddleware,
   notificationController.getAllNotifications
 );
 
 router.get(
   "/:id",
-  authenticateToken,
+  AuthMiddleware,
   // checkRole(["admin"]),
   notificationController.getNotificationById
 );
 
 router.put(
   "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   notificationController.updateNotificationById
 );
 
 router.delete(
   "/:id",
-  authenticateToken,
-  checkRole(["admin"]),
+  AdminMiddleware,
   notificationController.deleteNotificationById
 );
 
