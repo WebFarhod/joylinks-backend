@@ -256,14 +256,14 @@ class UserService {
       throw BaseError.NotFoundError("Id mavjud emas");
     }
     const filter = { _id: id };
-    if (user.role !== admin) {
+    if (user.role !== "admin") {
       filter.createBy = user.sub;
     }
     let existUser = await User.findOne(filter);
-    if (!userCheck) {
+    if (!existUser) {
       throw BaseError.NotFoundError("User topilmadi.");
     }
-    if (userCheck.role === "admin") {
+    if (existUser.role === "admin") {
       throw BaseError.BadRequest("Ruhsat berilmagan.");
     }
     existUser = await User.findOneAndDelete(filter);

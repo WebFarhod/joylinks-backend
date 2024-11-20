@@ -73,6 +73,8 @@ class UserController {
       const data = await userService.delete(req.params.id, req.user);
       return res.status(200).json(data);
     } catch (error) {
+      console.log("err", error);
+
       next(error);
     }
   }
