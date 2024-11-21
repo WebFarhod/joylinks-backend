@@ -33,9 +33,12 @@ app.use(
 );
 
 // app.use(cookieParser());
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use("/api/src/uploads", express.static(path.join(__dirname, "uploads")));
+// app.use(express.json());
+// app.use("/uploads", express.static("uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/src/uploads", express.static(path.join(__dirname, "uploads")));
 // // Routes
 app.use("/api", routes);
 app.get("/", (req, res) => {
