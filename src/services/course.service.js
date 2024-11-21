@@ -313,7 +313,9 @@ class CourseService {
               0
             );
 
-            module.lessons = lessons;
+            if (hasPurchased) {
+              module.lessons = lessons;
+            }
           })
         );
 

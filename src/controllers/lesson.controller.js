@@ -12,7 +12,7 @@ class LessonController {
           .status(400)
           .json({ error: "Talab qilinga malumotlar mavjud emas" });
       }
-      const data = await lessonService.create(res.body, user);
+      const data = await lessonService.create(req.body, user);
       return res.status(201).json(data);
     } catch (error) {
       next(error);
@@ -62,7 +62,7 @@ class LessonController {
       if (!req.params.id) {
         return res.status(400).json({ error: "ID mavjud emas" });
       }
-      const data = await moduleService.delete(req.params.id, req.user);
+      const data = await lessonService.delete(req.params.id, req.user);
       return res.status(200).json(data);
     } catch (error) {
       next(error);

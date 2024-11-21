@@ -1,10 +1,17 @@
+const { Types } = require("mongoose");
 const Course = require("../models/course.model");
 const Lesson = require("../models/lesson.model");
 const Module = require("../models/module.model");
+const BaseError = require("../utils/baseError");
 
 class LessonService {
   async checkCourse(moduleId, user) {
-    const module = await Module.findById(moduleId);
+    const match = {};
+    if (moduleId) {
+      match._id = new Types.ObjectId(moduleId);
+    }
+
+    const module = await Module.findOne(match);
     if (!module) {
       throw BaseError.NotFoundError("module topilmadi.");
     }
@@ -101,8 +108,8 @@ class LessonService {
     lesson.video_link = video_link;
     lesson.materials = materials;
     if (isActive !== undefined) {
-        lesson.isActive = isActive;
-      }u
+      lesson.isActive = isActive;
+    }
     await lesson.save();
 
     return { message: "Dars muvaffaqiyatli yangilandi." };

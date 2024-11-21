@@ -61,10 +61,10 @@ exports.getAllNotifications = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
 
-    const userId = req.user.id;
+    const userId = req.user.sub;
 
     // Fetch user details and validate user existence
-    const user = await User.findById(userId).populate("role").exec();
+    const user = await User.findById(userId).exec();
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
@@ -77,21 +77,23 @@ exports.getAllNotifications = async (req, res) => {
 
     console.log("user", user);
 
-    if (user.role.name == "student") {
+    if (user.role == "student") {
       filters.$or = [
+        { toAll: true },
         { toStudents: true },
         { userId: new mongoose.Types.ObjectId(user.id) },
         // { is_active: true },
       ];
     }
-    if (user.role.name === "mentor") {
+    if (user.role === "mentor") {
       filters.$or = [
+        { toAll: true },
         { toMentors: true },
         { userId: new mongoose.Types.ObjectId(user.id) },
         // { is_active: true },
       ];
     }
-    if (user.role.name === "admin") {
+    if (user.role === "admin") {
       filters = {};
     }
 
@@ -182,7 +184,7 @@ exports.getAllNotifications = async (req, res) => {
 exports.getNotificationById = async (req, res) => {
   try {
     const notificationId = req.params.id;
-    const userId = req.user.id;
+    const userId = req.user.sub;
 
     const notification = await Notification.findById(notificationId);
 
