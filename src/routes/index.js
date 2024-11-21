@@ -11,6 +11,9 @@ const commentRoutes = require("./comment.routes");
 const uploadRoutes = require("./uploadRoutes");
 const studentCourseRoutes = require("./studentCourse.routes");
 const notificationRoutes = require("./notification.routes");
+const paymentRoutes = require("./payment.routes");
+const balanceRoutes = require("./balance.routes");
+const upload = require("../middlewares/uploadVideoConfig");
 // const roleRoutes = require("./role.routes");
 // const questionRoutes = require("./question.routes");
 // const reviewRoutes = require("./review.routes");
@@ -19,14 +22,12 @@ const notificationRoutes = require("./notification.routes");
 // const quizquestionsRoutes = require("./quizQuestion.routes");
 // const districtRoutes = require("./district.routes");
 // const { uploadvideo } = require("../controllers/video.controller");
-const upload = require("../middlewares/uploadVideoConfig");
 // const { authenticateToken } = require("../middlewares/auth.middleware");
 // const { checkRole } = require("../middlewares/role.middleware");
 // const { getStatisAllData } = require("../controllers/statisConroller");
 // const resultsRoutes = require("./result.routes");
 // const orderRoutes = require("./order.routes");
 // // const transactionRouter = require("./transaction");
-// const paymentRoutes = require("./payment.routes");
 // const dashbordRoutes = require("./dashbord.routes");
 
 const router = express.Router();
@@ -43,6 +44,9 @@ router.use("/comments", commentRoutes);
 router.use("/upload", uploadRoutes);
 router.use("/studentcourses", studentCourseRoutes);
 router.use("/notifications", notificationRoutes);
+router.use("/payment", paymentRoutes);
+router.use("/balance", balanceRoutes);
+// router.use("/orders", orderRoutes);
 // router.use("/dashbord", dashbordRoutes);
 // router.use("/roles", roleRoutes);
 // router.use("/questions", questionRoutes);
@@ -53,8 +57,6 @@ router.use("/notifications", notificationRoutes);
 // router.use("/districts", districtRoutes);
 // router.use("/statistics", getStatisAllData);
 // router.use("/results", resultsRoutes);
-// router.use("/orders", orderRoutes);
-// router.use("/payment", paymentRoutes);
 // router.use(
 //   "/videos",
 //   authenticateToken,

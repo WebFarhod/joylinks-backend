@@ -19,7 +19,8 @@ router.get(
   "/",
   // authenticateToken,
   // // checkRole(["admin"]),
-  UserMiddleware,
+  // UserMiddleware,
+  AuthMiddleware,
   notificationController.getAllNotifications
 );
 

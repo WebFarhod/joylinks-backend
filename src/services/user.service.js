@@ -189,6 +189,7 @@ class UserService {
     }
     return {
       message: "Ma'limotlar muvaffaqiyatli yangilandi.",
+      data: user,
     };
   }
 
@@ -233,6 +234,7 @@ class UserService {
       }
       return {
         message: "User muvaffaqiyatli yangilandi.",
+        data: existUser,
       };
     } else {
       const updateData = {};
@@ -252,6 +254,7 @@ class UserService {
       }
       return {
         message: "User muvaffaqiyatli yangilandi.",
+        data: existUser,
       };
     }
   }

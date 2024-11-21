@@ -1,7 +1,7 @@
 const Transaction = require("../models/transaction.model");
 const { PaymeState } = require("../enums/PaymeState");
 
-const Course = require("../models/course.model");
+// const Course = require("../models/course.model");
 const User = require("../models/user.model");
 
 const StudentCourse = require("../models/studentCourse.model");
@@ -48,50 +48,38 @@ exports.payme = async (req, res, next) => {
 };
 
 const checkPerformTransaction = async (params, res) => {
-  const {
-    account: { user_id, course_id },
-  } = params;
-  let { amount } = params;
-  // await Transaction.deleteMany()
+  try {
+    const {
+      account: { user_id },
+    } = params;
+    let { amount } = params;
+    const user = await User.findById(user_id);
+    if (!user) {
+      throw sendError(res, -31050, "User topilmadi.");
+    }
+    amount = Math.floor(amount / 100);
+    const wallet = await Wallet.findOne({ user_id });
+    if (!wallet) {
+      throw sendError(res, -31050, "User topilmadi.");
+    }
+    if (amount !== wallet.amount) {
+      throw sendError(res, -31001, "Noto'g'ri summa.");
+    }
 
-  amount = Math.floor(amount / 100);
-
-  // const course = await Course.findById(course_id);
-  // if (!course) {
-  //   throw sendError(res, -31050, "Kurs topilmadi.");
-  // }
-  // if (!course.is_active) {
-  //   throw sendError(res, -31050, "Ruxsat mavjud emas.");
-  // }
-
-  // if (amount !== course.price) {
-  //   throw sendError(res, -31001, "Noto'g'ri summa.");
-  // }
-  const wallet = await Wallet.findOne({ user_id });
-  if (!wallet) {
-    throw sendError(res, -31050, "Kurs topilmadi.");
+    return {
+      result: {
+        allow: true,
+      },
+    };
+  } catch (error) {
+    throw sendError(res, -31050, "xatolik sodir bo'ldi.");
   }
-
-  if (amount !== wallet.amount) {
-    throw sendError(res, -31001, "Noto'g'ri summa.");
-  }
-
-  const user = await User.findById(user_id);
-  if (!user) {
-    throw sendError(res, -31050, "User topilmadi.");
-  }
-
-  return {
-    result: {
-      allow: true,
-    },
-  };
 };
 
 const createTransaction = async (params, res) => {
   const {
     id,
-    account: { user_id, course_id },
+    account: { user_id },
     time,
   } = params;
   let { amount } = params;
@@ -130,7 +118,6 @@ const createTransaction = async (params, res) => {
 
   transaction = await Transaction.findOne({
     user_id,
-    course_id,
   });
   if (transaction) {
     if (transaction.state === PaymeState.Paid)
@@ -144,7 +131,6 @@ const createTransaction = async (params, res) => {
     state: PaymeState.Pending,
     amount,
     user_id,
-    course_id,
     create_time: time,
   });
 
@@ -203,12 +189,16 @@ const performTransaction = async (params, res) => {
     },
     { new: true }
   );
-  //////////////
-  const enrollment = new StudentCourse({
-    course_id: tData.course_id,
-    student_id: tData.user_id,
-  });
-  await enrollment.save();
+  //////////////////////////
+  const wallet = await Wallet.findOne({ user_id });
+  const user = await User.findByIdAndUpdate(
+    user_id,
+    { balance: wallet.amount },
+    {
+      new: true,
+    }
+  );
+  await user.save();
   //////////////
   return {
     result: {
