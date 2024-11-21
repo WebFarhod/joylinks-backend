@@ -142,7 +142,9 @@ const handleFileUpload = (req, res) => {
     const filePath = `/uploads/${type}/${req.file.filename}`;
     res.status(200).json({
       message: "File uploaded successfully!",
-      path: filePath,
+      file: {
+        path: filePath,
+      },
     });
   });
 };
