@@ -186,8 +186,7 @@ class CourseService {
       throw BaseError.BadRequest({ message: "Invalid course ID" });
     }
     const match = { _id: new Types.ObjectId(courseId) };
-    if (!user) {
-    } else if (user === "student") {
+    if (!user || user.role === "student") {
       match.isActive = true;
     }
     const courseData = await Course.aggregate([
@@ -279,6 +278,7 @@ class CourseService {
         isActive: true,
       });
 
+      course.modules = modules;
       course.moduleCounts = modules.length;
 
       const totalLessons = await Lesson.countDocuments({
@@ -319,7 +319,7 @@ class CourseService {
 
         course.videoCounts = totalVideos;
         course.materialCounts = totalMaterials;
-        course.modules = modules;
+        // course.modules = modules;
       }
       // course.moduleCounts = modules.length;
 
