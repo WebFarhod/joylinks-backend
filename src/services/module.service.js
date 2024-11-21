@@ -1,4 +1,5 @@
 const Course = require("../models/course.model");
+const Lesson = require("../models/lesson.model");
 const Module = require("../models/module.model");
 const BaseError = require("../utils/baseError");
 
@@ -107,7 +108,7 @@ class ModuleService {
         "Yangilash uchun hech qanday ma'lumot berilmagan."
       );
     }
-    const updateModule = await Course.findByIdAndUpdate(id, updateData, {
+    const updateModule = await Module.findByIdAndUpdate(id, updateData, {
       new: true,
     });
     if (!updateModule) {
@@ -132,7 +133,7 @@ class ModuleService {
         "Siz ushbu modulni o'chirish huquqiga ega emassiz."
       );
     }
-    const deleteModule = await Course.findByIdAndDelete(id);
+    const deleteModule = await Module.findByIdAndDelete(id);
     if (!deleteModule) {
       throw BaseError.NotFoundError("Modulni o'chirishda xatolik yuz berdi.");
     }

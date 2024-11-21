@@ -12,7 +12,7 @@ class ModuleController {
           .status(400)
           .json({ error: "Talab qilinga malumotlar mavjud emas" });
       }
-      const data = await moduleService.create(res.body, user);
+      const data = await moduleService.create(req.body, user);
       return res.status(201).json(data);
     } catch (error) {
       next(error);
