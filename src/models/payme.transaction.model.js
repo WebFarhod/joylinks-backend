@@ -10,11 +10,11 @@ const transactionSchema = new Schema(
       type: String,
       required: true,
     },
-    // course_id: {
-    //   type: Schema.Types.ObjectId,
-    //   ref: "courses",
-    //   required: true,
-    // },
+    payment_id: {
+      type: Schema.Types.ObjectId,
+      ref: "payment",
+      required: true,
+    },
     user_id: {
       type: Schema.Types.ObjectId,
       ref: "users",

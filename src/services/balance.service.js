@@ -31,9 +31,7 @@ class BalanceService {
       console.log("0002:", ` m=${Mid};ac.user_id=${user_id};a=${amount * 100}`);
       console.log("====================================");
 
-      let base64String = Buffer.from(
-        ` m=${Mid};ac.user_id=${user_id};a=${amount * 100}`
-      ).toString("base64");
+      let base64String = Buffer.from(queryString).toString("base64");
 
       let paymeUrl = `https://checkout.paycom.uz/${base64String}`;
       // console.log("sdfsdfsdfsd", paymeUrl);

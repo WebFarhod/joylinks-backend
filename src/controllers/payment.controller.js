@@ -5,7 +5,7 @@ const Course = require("../models/course.model");
 const User = require("../models/user.model");
 
 const StudentCourse = require("../models/studentCourse.model");
-const Wallet = require("../models/payment.model");
+const Payment = require("../models/payment.model");
 const sendError = (res, code, message) => {
   res.json({
     error: {
@@ -21,10 +21,14 @@ exports.payme = async (req, res, next) => {
 
     switch (method) {
       case "CheckPerformTransaction": {
+        console.log("sdfs 111");
+        
         const result = await checkPerformTransaction(params, res);
         return res.json(result);
       }
       case "CreateTransaction": {
+        console.log("sdf");
+
         const result = await createTransaction(params, res);
         return res.json(result);
       }
@@ -49,16 +53,16 @@ exports.payme = async (req, res, next) => {
 
 const checkPerformTransaction = async (params, res) => {
   const {
-    account: { user_id },
+    account: { user_id, payment_id },
   } = params;
   let { amount } = params;
   amount = Math.floor(amount / 100);
-  const wallet = await Wallet.findOne({ user_id });
-  if (!wallet) {
-    throw sendError(res, -31050, "Kurs topilmadi.");
+  const payment = await Payment.findOne({ _id: payment_id, user_id });
+  if (!payment) {
+    throw sendError(res, -31050, "Tranzaksiya topilmadi.");
   }
 
-  if (amount !== wallet.amount) {
+  if (amount !== payment.amount) {
     throw sendError(res, -31001, "Noto'g'ri summa.");
   }
 
@@ -75,72 +79,86 @@ const checkPerformTransaction = async (params, res) => {
 };
 
 const createTransaction = async (params, res) => {
-  const {
-    id,
-    account: { user_id },
-    time,
-  } = params;
-  let { amount } = params;
+  try {
+    const {
+      id,
+      account: { user_id, payment_id },
+      time,
+    } = params;
+    let { amount } = params;
 
-  amount = Math.floor(amount / 100);
+    amount = Math.floor(amount / 100);
 
-  let transaction = await Transaction.findOne({ id });
+    let transaction = await Transaction.findOne({ id });
 
-  if (transaction) {
-    if (transaction.state !== PaymeState.Pending) {
-      throw sendError(res, -31008, "Operatsiyani amalga oshirish mumkin emas.");
+    if (transaction) {
+      if (transaction.state !== PaymeState.Pending) {
+        throw sendError(
+          res,
+          -31008,
+          "Operatsiyani amalga oshirish mumkin emas."
+        );
+      }
+
+      const currentTime = Date.now();
+
+      const expirationTime = (currentTime - transaction.createdAt) / 60000 < 12;
+
+      if (!expirationTime) {
+        await Transaction.updateById(params.id, {
+          state: PaymeState.PendingCanceled,
+          reason: 4,
+        });
+
+        throw sendError(
+          res,
+          -31008,
+          "Operatsiyani amalga oshirish mumkin emas."
+        );
+      }
+
+      return {
+        result: {
+          transaction: transaction.id,
+          state: transaction.state,
+          create_time: transaction.create_time,
+        },
+      };
+    }
+    await checkPerformTransaction(params, res);
+
+    transaction = await Transaction.findOne({
+      user_id,
+      payment_id,
+    });
+    if (transaction) {
+      if (transaction.state === PaymeState.Paid)
+        throw sendError(res, -31060, "Mahsulot uchun to'lov qilingan");
+      if (transaction.state === PaymeState.Pending)
+        throw sendError(res, -31050, "Mahsulot uchun to'lov kutilayapti");
     }
 
-    const currentTime = Date.now();
+    const newTransaction = await Transaction({
+      id: id,
+      state: PaymeState.Pending,
+      amount,
+      user_id,
+      payment_id,
+      create_time: time,
+    });
 
-    const expirationTime = (currentTime - transaction.createdAt) / 60000 < 12;
-
-    if (!expirationTime) {
-      await Transaction.updateById(params.id, {
-        state: PaymeState.PendingCanceled,
-        reason: 4,
-      });
-
-      throw sendError(res, -31008, "Operatsiyani amalga oshirish mumkin emas.");
-    }
+    await newTransaction.save();
 
     return {
       result: {
-        transaction: transaction.id,
-        state: transaction.state,
-        create_time: transaction.create_time,
+        transaction: newTransaction.id,
+        state: PaymeState.Pending,
+        create_time: newTransaction.create_time,
       },
     };
+  } catch (error) {
+    console.log("sdfsdfsd", error);
   }
-  await checkPerformTransaction(params, res);
-
-  transaction = await Transaction.findOne({
-    user_id,
-  });
-  if (transaction) {
-    if (transaction.state === PaymeState.Paid)
-      throw sendError(res, -31060, "Mahsulot uchun to'lov qilingan");
-    if (transaction.state === PaymeState.Pending)
-      throw sendError(res, -31050, "Mahsulot uchun to'lov kutilayapti");
-  }
-
-  const newTransaction = await Transaction({
-    id: id,
-    state: PaymeState.Pending,
-    amount,
-    user_id,
-    create_time: time,
-  });
-
-  await newTransaction.save();
-
-  return {
-    result: {
-      transaction: newTransaction.id,
-      state: PaymeState.Pending,
-      create_time: newTransaction.create_time,
-    },
-  };
 };
 
 const performTransaction = async (params, res) => {
@@ -188,9 +206,14 @@ const performTransaction = async (params, res) => {
     { new: true }
   );
   //////////////
-  const wallet = await Wallet.findOne({ user_id: tData.user_id });
-  const user = await User.updateById(user_id, { balance: tData.amount });
-
+  const payment = await Payment.findOne({
+    _id: tData.payment_id,
+    user_id: tData.user_id,
+  });
+  const user = await User.findById(user_id);
+  user.balance = user.balance + payment.amount;
+  // const user = await User.updateById(user_id, { balance: tData.amount });
+  user.save();
   //////////////
   return {
     result: {
