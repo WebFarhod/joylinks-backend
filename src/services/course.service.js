@@ -81,7 +81,7 @@ class CourseService {
       limit = 10,
     } = query;
 
-    const match = {};
+    let match = {};
     if (user) {
       if (user.role == "teacher") {
         match.teacherId = new ObjectId(teacherId);
@@ -92,6 +92,9 @@ class CourseService {
       }
       if (user.role == "user") {
         match.isActive = true;
+      }
+      if (user.role == "admin") {
+        match = {};
       }
     }
     if (!user) {
@@ -104,6 +107,79 @@ class CourseService {
     if (search) {
       match.name = { $regex: search, $options: "i" };
     }
+
+    // const courses = await Course.aggregate([
+    //   { $match: match },
+    //   {
+    //     $lookup: {
+    //       from: "categories",
+    //       localField: "categoryId",
+    //       foreignField: "_id",
+    //       as: "category",
+    //     },
+    //   },
+    //   { $unwind: "$category" },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "teacherId",
+    //       foreignField: "_id",
+    //       as: "teacher",
+    //     },
+    //   },
+    //   { $unwind: "$teacher" },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "mentorId",
+    //       foreignField: "_id",
+    //       as: "mentor",
+    //     },
+    //   },
+    //   { $unwind: "$mentor" },
+    //   {
+    //     $lookup: {
+    //       from: "modules",
+    //       localField: "_id",
+    //       foreignField: "courseId",
+    //       as: "modules",
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "lessons",
+    //       localField: "modules._id",
+    //       foreignField: "moduleId",
+    //       as: "lessons",
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "studentcourses",
+    //       localField: "_id",
+    //       foreignField: "courseId",
+    //       as: "purchases",
+    //     },
+    //   },
+    //   { $skip: (page - 1) * limit },
+    //   { $limit: parseInt(limit) },
+    //   {
+    //     $project: {
+    //       name: 1,
+    //       description: 1,
+    //       price: 1,
+    //       image: 1,
+    //       isActive: 1,
+    //       isTop: 1,
+    //       category: { name: 1, _id: 1 },
+    //       teacher: { firstname: 1, lastname: 1, _id: 1 },
+    //       mentor: { firstname: 1, lastname: 1, _id: 1 },
+    //       moduleCounts: { $size: "$modules" },
+    //       lessonCounts: { $size: "$lessons" },
+    //       purchaseCounts: { $size: "$purchases" },
+    //     },
+    //   },
+    // ]);
 
     const courses = await Course.aggregate([
       { $match: match },
@@ -124,7 +200,7 @@ class CourseService {
           as: "teacher",
         },
       },
-      { $unwind: "$teacher" },
+      { $unwind: { path: "$teacher", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "users",
@@ -133,7 +209,7 @@ class CourseService {
           as: "mentor",
         },
       },
-      { $unwind: "$mentor" },
+      { $unwind: { path: "$mentor", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "modules",
@@ -166,11 +242,19 @@ class CourseService {
           description: 1,
           price: 1,
           image: 1,
-          is_active: 1,
-          is_top: 1,
+          isActive: 1,
+          isTop: 1,
           category: { name: 1, _id: 1 },
-          teacher: { firstname: 1, lastname: 1, _id: 1 },
-          mentor: { firstname: 1, lastname: 1, _id: 1 },
+          teacher: {
+            firstname: { $ifNull: ["$teacher.firstname", null] },
+            lastname: { $ifNull: ["$teacher.lastname", null] },
+            _id: { $ifNull: ["$teacher._id", null] },
+          },
+          mentor: {
+            firstname: { $ifNull: ["$mentor.firstname", null] },
+            lastname: { $ifNull: ["$mentor.lastname", null] },
+            _id: { $ifNull: ["$mentor._id", null] },
+          },
           moduleCounts: { $size: "$modules" },
           lessonCounts: { $size: "$lessons" },
           purchaseCounts: { $size: "$purchases" },
