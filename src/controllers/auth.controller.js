@@ -7,7 +7,7 @@ class AuthController {
       if (!phone) {
         return res
           .status(400)
-          .json({ messge: "Talab qilinga malumotlar mavjud emas" });
+          .json({ message: "Talab qilinga malumotlar mavjud emas" });
       }
       const data = await authService.checkPhone(phone);
       return res.status(200).json(data);
@@ -22,7 +22,7 @@ class AuthController {
       if (!firstname || !lastname || !phone || !password) {
         return res
           .status(400)
-          .json({ messge: "Talab qilinga malumotlar mavjud emas" });
+          .json({ message: "Talab qilinga malumotlar mavjud emas" });
       }
       const data = await authService.register(
         firstname,
@@ -43,7 +43,7 @@ class AuthController {
       if (!code || !phone) {
         return res
           .status(400)
-          .json({ messge: "Talab qilinga malumotlar mavjud emas" });
+          .json({ message: "Talab qilinga malumotlar mavjud emas" });
       }
       // const { message, user, accessToken, refreshToken, redirect } =
       return await authService.verification(code, phone, res);
@@ -92,7 +92,7 @@ class AuthController {
       if (!phone || !password) {
         return res
           .status(400)
-          .json({ messge: "Talab qilinga malumotlar mavjud emas mavjud emas" });
+          .json({ message: "Talab qilinga malumotlar mavjud emas mavjud emas" });
       }
       const { message, user, accessToken, refreshToken, redirect } =
         await authService.login(phone, password);
@@ -135,7 +135,7 @@ class AuthController {
       if (!phone || !password || !key) {
         return res
           .status(400)
-          .json({ messge: "Talab qilinga malumotlar mavjud emas mavjud emas" });
+          .json({ message: "Talab qilinga malumotlar mavjud emas mavjud emas" });
       }
       const { message, user, accessToken, refreshToken, redirect } =
         await authService.newPassword(phone, password, key);

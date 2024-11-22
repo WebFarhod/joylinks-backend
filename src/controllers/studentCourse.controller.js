@@ -1,9 +1,20 @@
+const Course = require("../models/course.model");
 const StudentCourse = require("../models/studentCourse.model");
 const mongoose = require("mongoose");
+const BaseError = require("../utils/baseError");
+const User = require("../models/user.model");
 
 exports.createEnrollment = async (req, res) => {
   try {
     const { courseId, studentId } = req.body;
+    const course = await Course.findById(courseId);
+    if (!course) {
+      throw BaseError.NotFoundError("course topilmadi,");
+    }
+    const user = await User.findById(studentId);
+    if (!user) {
+      throw BaseError.NotFoundError("user topilmadi,");
+    }
     const studentCourse = await StudentCourse.findOne({
       courseId,
       studentId,
@@ -130,7 +141,7 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
       {
         $unwind: "$course_info",
       },
-     
+
       {
         $project: {
           _id: 1,

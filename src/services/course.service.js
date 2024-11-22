@@ -270,6 +270,8 @@ class CourseService {
       throw BaseError.BadRequest({ message: "Invalid course ID" });
     }
     const match = { _id: new Types.ObjectId(courseId) };
+    console.log("vvb", match);
+
     if (!user || user.role === "student") {
       match.isActive = true;
     }
@@ -485,8 +487,9 @@ class CourseService {
     } else if (user.role == "student") {
       hasPurchased = await StudentCourse.exists({
         courseId: courseId,
-        studentId: user.id,
+        studentId: user.sub,
       });
+      console.log("rt", hasPurchased);
       await processCourse(course, hasPurchased);
     }
     return course;
