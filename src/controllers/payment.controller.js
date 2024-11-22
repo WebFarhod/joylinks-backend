@@ -5,7 +5,7 @@ const Course = require("../models/course.model");
 const User = require("../models/user.model");
 
 const StudentCourse = require("../models/studentCourse.model");
-const Wallet = require("../models/wallet.model");
+const Wallet = require("../models/payment.model");
 const sendError = (res, code, message) => {
   res.json({
     error: {

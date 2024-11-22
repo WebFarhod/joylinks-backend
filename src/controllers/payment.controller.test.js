@@ -1,7 +1,7 @@
 const { PaymeState } = require("../enums/PaymeState");
 const Transaction = require("../models/payme.transaction.model");
 const User = require("../models/user.model");
-const Wallet = require("../models/wallet.model");
+const Wallet = require("../models/payment.model");
 
 // const Course = require("../models/course.model");
 
@@ -50,7 +50,7 @@ exports.payme = async (req, res, next) => {
 const checkPerformTransaction = async (params, res) => {
   try {
     const {
-      account: { user_id },
+      account: { user_id,  },
     } = params;
     let { amount } = params;
     const user = await User.findById(user_id);

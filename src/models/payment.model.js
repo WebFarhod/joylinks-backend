@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 
-const walletSchema = new Schema(
+const paymentSchema = new Schema(
   {
     user_id: {
       type: Schema.Types.ObjectId,
@@ -12,9 +12,14 @@ const walletSchema = new Schema(
       default: 0,
       required: true,
     },
+    payment_type: {
+      type: String,
+      enum: ["payme", "click"],
+      required: true,
+    },
   },
   { timestamps: true }
 );
 
-const Wallet = model("wallet", walletSchema);
-module.exports = Wallet;
+const Payment = model("payment", paymentSchema);
+module.exports = Payment;

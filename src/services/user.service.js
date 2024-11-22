@@ -218,7 +218,7 @@ class UserService {
       const updateData = {};
       if (data.role) updateData.role = data.role;
       if (data.balance) updateData.balance = data.balance;
-      if (typeof data.isBlock === Boolean) {
+      if (typeof data.isBlock === "boolean") {
         if (typeof data.isBlock !== "undefined")
           updateData.isBlock = data.isBlock;
       }

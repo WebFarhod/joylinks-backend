@@ -1,23 +1,24 @@
 const mongoose = require("mongoose");
 const Banner = require("../models/banner.model");
 const BaseError = require("../utils/baseError");
-const Wallet = require("../models/wallet.model");
+const Payment = require("../models/payment.model");
 
 class BalanceService {
-  async processPayment(payment_type, amount, user_id) {
+  async processPayment(payment_type, amount, user_id, payment_id) {
     const Mid = process.env.PAYME_MERCHANT_ID;
-    console.log("====================================");
-    console.log(Mid);
-    console.log("====================================");
+    // console.log("====================================");
+    // console.log(Mid);
+    // console.log("====================================");
     if (!Mid) {
-      return "merchant id topilmadi";
+      throw BaseError.BadRequest("merchant id topilmadi");
     }
-    console.log(payment_type, amount, user_id);
+    // console.log(payment_type, amount, user_id);
 
     if (payment_type === "payme") {
       const params = {
         m: Mid,
         "ac.user_id": user_id,
+        "ac.payment_id": payment_id,
         a: amount * 100,
       };
 
@@ -26,7 +27,8 @@ class BalanceService {
         .join(";");
 
       console.log("====================================");
-      console.log("Yaratilgan Query String:", queryString);
+      console.log("0001:", queryString);
+      console.log("0002:", ` m=${Mid};ac.user_id=${user_id};a=${amount * 100}`);
       console.log("====================================");
 
       let base64String = Buffer.from(
@@ -34,30 +36,28 @@ class BalanceService {
       ).toString("base64");
 
       let paymeUrl = `https://checkout.paycom.uz/${base64String}`;
-      console.log("sdfsdfsdfsd", paymeUrl);
-
+      // console.log("sdfsdfsdfsd", paymeUrl);
       return paymeUrl;
     }
   }
   async create(amount, user, payment_type) {
-    let wallet = await Wallet.findOne({ user_id: user.sub });
-    if (wallet) {
-      wallet.amount = amount;
-      wallet.save();
-    } else {
-      wallet = new Wallet({
-        amount,
-        user_id: user.sub,
-      });
-      await wallet.save();
-    }
+    // let wallet = await Wallet.findOne({ user_id: user.sub });
+    // if (wallet) {
+    //   wallet.amount = amount;
+    //   wallet.save();
+    // } else {
+    const payment = new Payment({
+      amount,
+      user_id: user.sub,
+      payment_type,
+    });
+    await payment.save();
     const paymentSuccess = await this.processPayment(
       payment_type,
       amount,
-      user.sub
+      user.sub,
+      payment._id
     );
-    console.log("dfDf", paymentSuccess);
-
     return paymentSuccess;
   }
 }
