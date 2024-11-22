@@ -218,8 +218,10 @@ class UserService {
       const updateData = {};
       if (data.role) updateData.role = data.role;
       if (data.balance) updateData.balance = data.balance;
-      if (typeof data.isBlock !== "undefined")
-        updateData.isBlock = data.isBlock;
+      if (typeof data.isBlock === Boolean) {
+        if (typeof data.isBlock !== "undefined")
+          updateData.isBlock = data.isBlock;
+      }
       if (Object.keys(updateData).length === 0) {
         throw BaseError.BadRequest(
           "Yangilash uchun hech qanday ma'lumot berilmagan."

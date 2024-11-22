@@ -1,11 +1,11 @@
-const Transaction = require("../models/transaction.model");
 const { PaymeState } = require("../enums/PaymeState");
+const Transaction = require("../models/payme.transaction.model");
+const User = require("../models/user.model");
+const Wallet = require("../models/wallet.model");
 
 // const Course = require("../models/course.model");
-const User = require("../models/user.model");
 
-const StudentCourse = require("../models/studentCourse.model");
-const Wallet = require("../models/wallet.model");
+// const StudentCourse = require("../models/studentCourse.model");
 const sendError = (res, code, message) => {
   res.json({
     error: {
@@ -146,67 +146,76 @@ const createTransaction = async (params, res) => {
 };
 
 const performTransaction = async (params, res) => {
-  const currentTime = Date.now();
+  try {
+    const currentTime = Date.now();
 
-  const transaction = await Transaction.findOne({ id: params.id });
-  if (!transaction) {
-    throw sendError(res, -31003, "Tranzaksiya topilmadi.");
-  }
-
-  if (transaction.state !== PaymeState.Pending) {
-    if (transaction.state !== PaymeState.Paid) {
-      throw sendError(res, -31008, "Ushbu operatsiyani bajarish mumkin emas.");
+    const transaction = await Transaction.findOne({ id: params.id });
+    if (!transaction) {
+      throw sendError(res, -31003, "Tranzaksiya topilmadi.");
     }
+
+    if (transaction.state !== PaymeState.Pending) {
+      if (transaction.state !== PaymeState.Paid) {
+        throw sendError(
+          res,
+          -31008,
+          "Ushbu operatsiyani bajarish mumkin emas."
+        );
+      }
+      return {
+        result: {
+          state: transaction.state,
+          perform_time: transaction.perform_time,
+          transaction: transaction.id,
+        },
+      };
+    }
+
+    const timeDifference = (currentTime - transaction.create_time) / 60000;
+    const isExpired = timeDifference >= 12;
+
+    if (isExpired) {
+      await Transaction.findOneAndUpdate(
+        { id: transaction.id },
+        {
+          state: PaymeState.PendingCanceled,
+          reason: 4,
+          cancel_time: currentTime,
+        }
+      );
+      return sendError(res, -31008, "Ushbu operatsiyani bajarish mumkin emas."); // throw o'rniga return
+    }
+
+    const tData = await Transaction.findOneAndUpdate(
+      { id: params.id },
+      {
+        state: PaymeState.Paid,
+        perform_time: currentTime,
+      },
+      { new: true }
+    );
+    //////////////////////////
+    const wallet = await Wallet.findOne({ user_id });
+
+    const user = await User.findById(user_id);
+    user.balance=user.balance+wallet.amount
+    // { balance: wallet.amount },
+    // {
+    //   new: true,
+    // }
+
+    await user.save();
+    //////////////
     return {
       result: {
-        state: transaction.state,
-        perform_time: transaction.perform_time,
+        perform_time: currentTime,
         transaction: transaction.id,
+        state: PaymeState.Paid,
       },
     };
+  } catch (error) {
+    console.log("errrrrrrrrrr", error);
   }
-
-  const timeDifference = (currentTime - transaction.create_time) / 60000;
-  const isExpired = timeDifference >= 12;
-
-  if (isExpired) {
-    await Transaction.findOneAndUpdate(
-      { id: transaction.id },
-      {
-        state: PaymeState.PendingCanceled,
-        reason: 4,
-        cancel_time: currentTime,
-      }
-    );
-    return sendError(res, -31008, "Ushbu operatsiyani bajarish mumkin emas."); // throw o'rniga return
-  }
-
-  const tData = await Transaction.findOneAndUpdate(
-    { id: params.id },
-    {
-      state: PaymeState.Paid,
-      perform_time: currentTime,
-    },
-    { new: true }
-  );
-  //////////////////////////
-  const wallet = await Wallet.findOne({ user_id });
-  const user = await User.findByIdAndUpdate(
-    user_id,
-    { balance: wallet.amount },
-    {
-      new: true,
-    }
-  );
-  await user.save();
-  //////////////
-  return {
-    result: {
-      perform_time: currentTime,
-      transaction: transaction.id,
-      state: PaymeState.Paid,
-    },
-  };
 };
 
 const cancelTransaction = async (params, res) => {

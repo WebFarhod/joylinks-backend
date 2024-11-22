@@ -64,6 +64,8 @@ class UserController {
       const data = await userService.update(req.params.id, req.body, req.user);
       return res.status(200).json(data);
     } catch (error) {
+      console.log("errt", error);
+
       next(error);
     }
   }
