@@ -15,6 +15,7 @@ class CourseService {
       throw BaseError.NotFoundError("teacher topilmadi.");
     }
   }
+
   async checkMentor(teacherId, mentorId, type) {
     let filter = { _id: mentorId, role: "mentor" };
     if (type == "teacher") {
@@ -25,12 +26,14 @@ class CourseService {
       throw BaseError.NotFoundError("mentor topilmadi.");
     }
   }
+
   async checkCategory(categoryId) {
     const category = await Category.findById(categoryId);
     if (!category) {
       throw BaseError.NotFoundError("mavjud bo'lmagan category.");
     }
   }
+
   async create(
     { name, description, price, image, categoryId, isTop, teacherId, mentorId },
     user
@@ -70,6 +73,7 @@ class CourseService {
       return { message: "Kurs yaratildi.", data: newCourse };
     }
   }
+
   async getAll(query, user) {
     const {
       isTop,
@@ -388,7 +392,8 @@ class CourseService {
             const lessons = await Lesson.find({
               moduleId: module._id,
               isActive: true,
-            });
+            }).populate("test");
+            // .populate("progress");
 
             totalVideos += lessons.reduce(
               (sum, lesson) => sum + lesson.video_link.length,

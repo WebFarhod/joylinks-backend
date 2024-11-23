@@ -59,9 +59,7 @@ class CourseController {
 
   async getCourseById(req, res, next) {
     try {
-      console.log(req.params.id);
       const data = await courseService.get(req.params.id, req.user);
-
       return res.status(200).json(data);
     } catch (error) {
       console.log("sd", error);

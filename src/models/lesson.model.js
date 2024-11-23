@@ -37,18 +37,25 @@ const lessonSchema = new Schema(
       type: Boolean,
       default: true,
     },
-    passed: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "users",
-      },
-    ],
   },
   {
     timestamps: true,
-    // toJSON: { virtuals: true }, toObject: { virtuals: true }
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+lessonSchema.virtual("test", {
+  ref: "test",
+  localField: "_id",
+  foreignField: "lessonId",
+});
+
+lessonSchema.virtual("progress", {
+  ref: "progress",
+  localField: "_id",
+  foreignField: "lessonId",
+});
 
 const Lesson = model("lessons", lessonSchema);
 
