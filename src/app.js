@@ -21,7 +21,7 @@ app.use(express.json());
 // app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(bodyParser.json());
 app.use(cors());
-// app.options("*", cors());
+app.options("*", cors());
 app.use(morgan("dev"));
 
 app.use(
@@ -33,9 +33,9 @@ app.use(
 );
 
 // app.use(cookieParser());
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-// app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
-// app.use("/api/src/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/src/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/src/uploads", express.static(path.join(__dirname, "uploads")));
 // app.use(express.json());
 // app.use("/uploads", express.static("uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
