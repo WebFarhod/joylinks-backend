@@ -16,6 +16,8 @@ const balanceRoutes = require("./balance.routes");
 const upload = require("../middlewares/uploadVideoConfig");
 const { getStatisAllData } = require("../controllers/statisConroller");
 const testRoutes = require("../routes/test.routes");
+const RoleMiddleware = require("../middlewares/role.middleware");
+const videoRoutes = require("./video.routes");
 // const roleRoutes = require("./role.routes");
 // const questionRoutes = require("./question.routes");
 // const reviewRoutes = require("./review.routes");
@@ -23,7 +25,6 @@ const testRoutes = require("../routes/test.routes");
 // const quizRoutes = require("./quiz.routes");
 // const quizquestionsRoutes = require("./quizQuestion.routes");
 // const districtRoutes = require("./district.routes");
-// const { uploadvideo } = require("../controllers/video.controller");
 // const { authenticateToken } = require("../middlewares/auth.middleware");
 // const { checkRole } = require("../middlewares/role.middleware");
 // const resultsRoutes = require("./result.routes");
@@ -49,6 +50,15 @@ router.use("/payment", paymentRoutes);
 router.use("/balance", balanceRoutes);
 router.use("/statistics", getStatisAllData);
 router.use("/test", testRoutes);
+router.use(
+  "/videos",
+  //   authenticateToken,
+  //   checkRole(["admin", "mentor", "teacher"]),
+  //   RoleMiddleware(["admin", "mentor", "teacher"]),
+  //   upload.single("video"),
+  //   uploadvideo
+  videoRoutes
+);
 // router.use("/orders", orderRoutes);
 // router.use("/dashbord", dashbordRoutes);
 // router.use("/roles", roleRoutes);
@@ -59,13 +69,6 @@ router.use("/test", testRoutes);
 // router.use("/quiz-questions", quizquestionsRoutes);
 // router.use("/districts", districtRoutes);
 // router.use("/results", resultsRoutes);
-// router.use(
-//   "/videos",
-//   authenticateToken,
-//   checkRole(["admin", "mentor", "teacher"]),
-//   upload.single("video"),
-//   uploadvideo
-// );
 // router.use("/payments/click", transactionRouter);
 
 module.exports = router;
