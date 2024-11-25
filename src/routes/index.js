@@ -18,7 +18,6 @@ const { getStatisAllData } = require("../controllers/statisConroller");
 const testRoutes = require("../routes/test.routes");
 const RoleMiddleware = require("../middlewares/role.middleware");
 const videoRoutes = require("./video.routes");
-// const roleRoutes = require("./role.routes");
 // const questionRoutes = require("./question.routes");
 // const reviewRoutes = require("./review.routes");
 // const assignRoutes = require("./assign.routes");
@@ -31,6 +30,7 @@ const videoRoutes = require("./video.routes");
 // const orderRoutes = require("./order.routes");
 // // const transactionRouter = require("./transaction");
 // const dashbordRoutes = require("./dashbord.routes");
+// const roleRoutes = require("./role.routes");
 
 const router = express.Router();
 

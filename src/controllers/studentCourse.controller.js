@@ -180,17 +180,13 @@ exports.getEnrollmentsByStudentId = async (req, res) => {
 
 exports.getMyCourse = async (req, res) => {
   try {
-    // Token orqali olinadigan foydalanuvchi identifikatori
-    const id = req.user.id;
+    const id = req.user.sub;
     const studentId = new mongoose.Types.ObjectId(id);
 
-    // Ma'lumotlar bazasidan kurslarga yozilgan enrollmentsni olish
     const enrollments = await StudentCourse.aggregate([
-      // Foydalanuvchiga tegishli enrollmentsni topish
       {
-        $match: { student_id: studentId },
+        $match: { studentId: studentId, isActive: true },
       },
-      // Kurslar bilan bog'lash
       {
         $lookup: {
           from: "courses",
@@ -202,7 +198,6 @@ exports.getMyCourse = async (req, res) => {
       {
         $unwind: "$course_info",
       },
-      // O'qituvchi bilan bog'lash
       {
         $lookup: {
           from: "users",
@@ -214,19 +209,6 @@ exports.getMyCourse = async (req, res) => {
       {
         $unwind: "$teacher_info",
       },
-      // Kategoriya bilan bog'lash
-      // {
-      //   $lookup: {
-      //     from: "categories",
-      //     localField: "course_info.category_id",
-      //     foreignField: "_id",
-      //     as: "category_info",
-      //   },
-      // },
-      // {
-      //   $unwind: "$category_info",
-      // },
-      // Kerakli ma'lumotlarni chiqarish
       {
         $project: {
           _id: 1,
@@ -237,8 +219,8 @@ exports.getMyCourse = async (req, res) => {
           duration: "$course_info.duration",
           level: "$course_info.level",
           photo: "$course_info.photo",
-          is_active: "$course_info.isActive",
-          is_top: "$course_info.isTop",
+          isActive: "$course_info.isActive",
+          isTop: "$course_info.isTop",
 
           teacher: {
             _id: "$teacher_info._id",
