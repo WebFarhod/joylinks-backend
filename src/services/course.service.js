@@ -94,7 +94,7 @@ class CourseService {
         match.mentorId = new ObjectId(mentorId);
         match.isActive = true;
       }
-      if (user.role == "user") {
+      if (user.role == "student") {
         match.isActive = true;
       }
       if (user.role == "admin") {
@@ -545,7 +545,8 @@ class CourseService {
       if (description) updateData.description = description;
       if (price) updateData.price = Number(price);
       if (image) updateData.image = image;
-      if (isActive) updateData.isActive = true || false;
+      // if (isActive) updateData.isActive = true || false;
+      if (typeof isActive !== "undefined") updateData.isActive = isActive;
       if (isTop) updateData.isTop = true || false;
       if (categoryId) {
         await this.checkCategory(categoryId);

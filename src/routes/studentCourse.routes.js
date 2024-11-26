@@ -9,7 +9,7 @@ const AuthMiddleware = require("../middlewares/auth.middleware");
 
 router.post("/", AdminMiddleware, studentCourseController.createEnrollment);
 
-router.get("/", studentCourseController.getAllEnrollments);
+router.get("/", AdminMiddleware, studentCourseController.getAllEnrollments);
 
 router.get("/mycourses", AuthMiddleware, studentCourseController.getMyCourse);
 

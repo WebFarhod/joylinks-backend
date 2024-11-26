@@ -82,18 +82,20 @@ exports.getAllEnrollments = async (req, res) => {
       {
         $project: {
           _id: 1,
-          studentId: "$student",
           student: {
             id: "$student_info._id",
+            firstname: "$student_info.firstname",
+            lastname: "$student_info.lastname",
             phone: "$student_info.phone",
             role: "$student_info.role",
-            active: "$student_info.active",
-            photo: "$student_info.photo",
+            isActive: "$student_info.isActive",
           },
           course: {
             id: "$course_info._id",
             name: "$course_info.name",
             price: "$course_info.price",
+            image: "$course_info.image",
+            isActive: "$course_info.isActive",
           },
         },
       },

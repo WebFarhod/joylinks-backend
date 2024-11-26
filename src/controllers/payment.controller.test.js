@@ -333,11 +333,11 @@ exports.payme = async (req, res, next) => {
 
 const checkPerformTransaction = async (params, res) => {
   const {
-    account: { user_id, payment_id },
+    account: { user_id, course_id },
   } = params;
   let { amount } = params;
   amount = Math.floor(amount / 100);
-  const payment = await Payment.findOne({ _id: payment_id, user_id });
+  const payment = await Payment.findOne({ _id: course_id, user_id });
   if (!payment) {
     throw sendError(res, -31050, "Tranzaksiya topilmadi.");
   }
@@ -362,7 +362,7 @@ const createTransaction = async (params, res) => {
   try {
     const {
       id,
-      account: { user_id, payment_id },
+      account: { user_id, course_id },
       time,
     } = params;
     let { amount } = params;
@@ -409,7 +409,7 @@ const createTransaction = async (params, res) => {
 
     transaction = await Transaction.findOne({
       user_id,
-      payment_id,
+      payment_id: course_id,
     });
     if (transaction) {
       if (transaction.state === PaymeState.Paid)
@@ -427,7 +427,7 @@ const createTransaction = async (params, res) => {
       state: PaymeState.Pending,
       amount,
       user_id,
-      payment_id,
+      payment_id: course_id,
       create_time: time,
     });
 

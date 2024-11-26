@@ -9,21 +9,44 @@ class SmsService {
     // };
 
     try {
-    //   const res = await axios.post("http://93.127.163.78:3010/api", data, {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       "User-Agent": "insomnia/9.3.3",
-    //       Authorization:
-    //         "Bearer c072X2T6i9SuapZR13cGzYzY86l8AuIYC55m19tqSooqgVxsJ7dmfVL3hXhR65Qa",
-    //     },
-    //   });
+      //   const res = await axios.post("http://93.127.163.78:3010/api", data, {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       "User-Agent": "insomnia/9.3.3",
+      //       Authorization:
+      //         "Bearer c072X2T6i9SuapZR13cGzYzY86l8AuIYC55m19tqSooqgVxsJ7dmfVL3hXhR65Qa",
+      //     },
+      //   });
 
-    //   if (res.data && res.data.status === "waiting") {
-    //     return "ok";
-    //   }
-    //   console.error("SMS yuborish xatosi:", res.data);
-    //   return null;
-    return "ok"
+      //   if (res.data && res.data.status === "waiting") {
+      //     return "ok";
+      //   }
+      //   console.error("SMS yuborish xatosi:", res.data);
+      //   return null;
+      // return "ok";
+
+      const response = await axios.post(
+        "https://notify.eskiz.uz/api/message/sms/send",
+        {
+          mobile_phone: phoneNumber,
+          message: `joylinks sayti uchun tasdiqlash kodi: ${code}`,
+          from: "4546", // Eskiz tomonidan tasdiqlangan "from" nomi
+          callback_url: "", // Agar kerak bo'lsa, qo'shing
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.ESKIZ_API_TOKEN}`,
+          },
+        }
+      );
+
+      console.log("data", data);
+      return "ok";
+
+      // res.status(200).json({
+      //   message: "SMS sent successfully",
+      //   data: response.data,
+      // });
     } catch (error) {
       console.error("SMS yuborish xatosi:", error);
       return null;

@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const Banner = require("../models/banner.model");
 const BaseError = require("../utils/baseError");
 const Payment = require("../models/payment.model");
 
@@ -18,7 +17,7 @@ class BalanceService {
       const params = {
         m: Mid,
         "ac.user_id": user_id,
-        "ac.payment_id": payment_id,
+        "ac.course_id": payment_id,
         a: amount * 100,
       };
 
