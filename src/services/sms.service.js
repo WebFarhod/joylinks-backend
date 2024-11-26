@@ -35,7 +35,7 @@ class SmsService {
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.ESKIZ_API_TOKEN}`,
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzUxOTY4NjIsImlhdCI6MTczMjYwNDg2Miwicm9sZSI6InVzZXIiLCJzaWduIjoiOWIyYjVkMzBkOWZjN2Y1MzU0YWViMzc2YzI1NmYyMTczNDRjMGEwYjgyZGY3ODYzY2NiMWRkNmFkN2QxYzUzZiIsInN1YiI6IjYxMTQifQ.TKM17UxGi5mUZ5TA60FtSD-FY8bxsHNjHIOvCCwaHWc`,
           },
         }
       );
