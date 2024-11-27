@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const { Types } = require("mongoose");
 const Category = require("../models/category.model");
 const Course = require("../models/course.model");
 const Lesson = require("../models/lesson.model");
