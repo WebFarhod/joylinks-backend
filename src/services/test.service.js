@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const BaseError = require("../utils/baseError");
 const Lesson = require("../models/lesson.model");
 const Test = require("../models/test.model");
+const Progress = require("../models/progress.model");
 
 class TestService {
   async checkLesson(lessonId) {
@@ -12,6 +13,7 @@ class TestService {
 
     return lesson;
   }
+
   async checkQuestions(data) {
     if (!Array.isArray(data.questions) || data.questions.length === 0) {
       throw BaseError.NotFoundError("Savollar majburiy.");
@@ -56,6 +58,53 @@ class TestService {
     await newTest.save();
 
     return { message: "Test muvaffaqiyatli yaratildi", test: newTest };
+  }
+
+  async checkTest(data, user) {
+    const { lessonId, answers } = data;
+    const test = await Test.findOne({ lessonId }).lean();
+    if (!test) {
+      throw BaseError.NotFoundError("Dars uchun test topilmadi");
+    }
+    if (!Array.isArray(answers) || answers.length !== test.questions.length) {
+      throw BaseError.BadRequest(
+        "Javoblar soni testdagi savollar soniga teng bo'lishi kerak"
+      );
+    }
+    let correctCount = 0;
+
+    test.questions.forEach((question, index) => {
+      const userAnswer = answers[index];
+      if (userAnswer === question.correctAnswer) {
+        correctCount++;
+      }
+    });
+    const totalQuestions = test.questions.length;
+    // const scorePercentage = Math.round((correctCount / totalQuestions) * 100);
+    const isTestPassed = totalQuestions === correctCount; // 70% va undan yuqori natija muvaffaqiyatli deb qabul qilinadi.
+    // const isTestPassed = scorePercentage >= 70; // 70% va undan yuqori natija muvaffaqiyatli deb qabul qilinadi.
+
+    // 6. Progresni yangilash yoki yaratish
+    const progress = await Progress.findOneAndUpdate(
+      { userId: user._id, lessonId },
+      {
+        userId: user._id,
+        lessonId,
+        isLessonCompleted: isTestPassed, // Agar test muvaffaqiyatli o'tgan bo'lsa, dars ham tugatilgan deb hisoblanadi
+        isTestPassed,
+      },
+      { upsert: true, new: true }
+    );
+
+    return {
+      message: isTestPassed
+        ? "Tabriklaymiz! Testni muvaffaqiyatli topshirdingiz."
+        : "Afsuski, testdan o'tolmadingiz. Qayta urinib ko'ring.",
+      // totalQuestions,
+      // correctAnswers: correctCount,
+      // scorePercentage,
+      // progress,
+    };
   }
 
   async getAll(query, user) {

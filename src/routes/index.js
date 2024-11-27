@@ -18,6 +18,7 @@ const { getStatisAllData } = require("../controllers/statisConroller");
 const testRoutes = require("../routes/test.routes");
 const RoleMiddleware = require("../middlewares/role.middleware");
 const videoRoutes = require("./video.routes");
+const smsRoutes = require("./sms.routes");
 // const questionRoutes = require("./question.routes");
 // const reviewRoutes = require("./review.routes");
 // const assignRoutes = require("./assign.routes");
@@ -50,6 +51,7 @@ router.use("/payment", paymentRoutes);
 router.use("/balance", balanceRoutes);
 router.use("/statistics", getStatisAllData);
 router.use("/test", testRoutes);
+router.use("/sms", smsRoutes);
 router.use(
   "/videos",
   //   authenticateToken,

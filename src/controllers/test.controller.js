@@ -9,14 +9,15 @@ class TestController {
       next(error);
     }
   }
-  // async getTests(req, res, next) {
-  //   try {
-  //     const data = await testService.create(req.query, req.user);
-  //     return res.status(201).json(data);
-  //   } catch (error) {
-  //     next(error);
-  //   }
-  // }
+
+  async checkTest(req, res, next) {
+    try {
+      const data = await testService.checkTest(req.query, req.user);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
 
   async getTestById(req, res, next) {
     try {

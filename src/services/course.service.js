@@ -195,7 +195,8 @@ class CourseService {
           as: "category",
         },
       },
-      { $unwind: "$category" },
+      // { $unwind: "$category" },
+      { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "users",
@@ -248,7 +249,10 @@ class CourseService {
           image: 1,
           isActive: 1,
           isTop: 1,
-          category: { name: 1, _id: 1 },
+          category: {
+            _id: { $ifNull: ["$category._id", null] },
+            name: { $ifNull: ["$category.name", null] },
+          },
           teacher: {
             firstname: { $ifNull: ["$teacher.firstname", null] },
             lastname: { $ifNull: ["$teacher.lastname", null] },

@@ -29,9 +29,9 @@ class SmsService {
         "https://notify.eskiz.uz/api/message/sms/send",
         {
           mobile_phone: phoneNumber,
-          message: `joylinks sayti uchun tasdiqlash kodi: ${code}`,
-          from: "4546", // Eskiz tomonidan tasdiqlangan "from" nomi
-          callback_url: "", // Agar kerak bo'lsa, qo'shing
+          // message: `Assalomu alaykum hurmatli o'quvchi, sizning hisobingizda 1 darsga yetarli mablag' qoldi, darsga kirish uchun to'lov qilishingizni so'rab qolamiz. Hurmat bilan Joylinks IT Academy https://joylinks.uz`,
+          message: `Joylinks sayti uchun tasdiqlash kodi: ${code}`,
+          from: "4546",
         },
         {
           headers: {
@@ -40,7 +40,7 @@ class SmsService {
         }
       );
 
-      console.log("data", data);
+      console.log("data", response.data);
       return "ok";
 
       // res.status(200).json({
