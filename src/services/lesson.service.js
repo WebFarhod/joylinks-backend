@@ -6,6 +6,8 @@ const BaseError = require("../utils/baseError");
 
 class LessonService {
   async checkCourse(moduleId, user) {
+    console.log(user);
+
     const match = {};
     if (moduleId) {
       match._id = new Types.ObjectId(moduleId);
@@ -20,10 +22,10 @@ class LessonService {
       filter._id = module.courseId;
     }
     if (user.role == "teacher") {
-      filter.teacherId = user.sub;
+      filter.teacherId = user._id;
     }
     if (user.role == "mentor") {
-      filter.mentorId = user.sub;
+      filter.mentorId = user._id;
     }
     const course = await Course.findOne(filter);
     if (!course) {
