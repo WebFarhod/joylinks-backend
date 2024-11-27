@@ -5,7 +5,6 @@ const Lesson = require("../models/lesson.model");
 const Module = require("../models/module.model");
 const User = require("../models/user.model");
 const BaseError = require("../utils/baseError");
-const { ObjectId } = require("mongodb");
 const StudentCourse = require("../models/studentCourse.model");
 
 class CourseService {

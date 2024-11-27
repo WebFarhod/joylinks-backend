@@ -10,11 +10,12 @@ class ModuleService {
       filter._id = courseId;
     }
     if (user.role == "teacher") {
-      filter.teacherId = user.sub;
+      filter.teacherId = user._id;
     }
     if (user.role == "mentor") {
-      filter.mentorId = user.sub;
+      filter.mentorId = user._id;
     }
+
     const course = await Course.findOne(filter);
     if (!course) {
       throw BaseError.NotFoundError("ma'lumot topilmadi.");
