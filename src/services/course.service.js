@@ -1,4 +1,4 @@
-const { Types } = require("mongoose");
+const mongoose = require("mongoose");
 const Category = require("../models/category.model");
 const Course = require("../models/course.model");
 const Lesson = require("../models/lesson.model");
@@ -88,10 +88,10 @@ class CourseService {
     let match = {};
     if (user) {
       if (user.role == "teacher") {
-        match.teacherId = new ObjectId(teacherId);
+        match.teacherId = new Types.ObjectId(user.sub);
       }
       if (user.role == "mentor") {
-        match.mentorId = new ObjectId(mentorId);
+        match.mentorId = new Types.ObjectId(user.sub);
         match.isActive = true;
       }
       if (user.role == "student") {
@@ -105,9 +105,9 @@ class CourseService {
       match.isActive = true;
     }
     if (isTop) match.isTop = true;
-    if (teacherId) match.teacherId = new ObjectId(teacherId);
-    if (mentorId) match.mentorId = new ObjectId(mentorId);
-    if (categoryId) match.categoryId = new ObjectId(categoryId);
+    if (teacherId) match.teacherId = new Types.ObjectId(teacherId);
+    if (mentorId) match.mentorId = new Types.ObjectId(mentorId);
+    if (categoryId) match.categoryId = new Types.ObjectId(categoryId);
     if (search) {
       match.name = { $regex: search, $options: "i" };
     }
@@ -184,6 +184,8 @@ class CourseService {
     //     },
     //   },
     // ]);
+
+    console.log("llk", match);
 
     const courses = await Course.aggregate([
       { $match: match },
