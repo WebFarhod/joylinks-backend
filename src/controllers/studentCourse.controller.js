@@ -34,7 +34,9 @@ exports.createEnrollment = async (req, res) => {
     });
 
     await enrollment.save();
-    const coursePayment = await CoursePayment.findById(courseId);
+    const coursePayment = await CoursePayment.findOne({ courseId });
+    console.log("coursePayment", coursePayment);
+
     // ({
     //   courseId,
     //   price: course.price,

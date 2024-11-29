@@ -53,8 +53,6 @@ class AuthController {
       // });
       // return res.json({ message, user, accessToken, redirect });
     } catch (error) {
-      console.log("rr", error);
-
       next(error);
     }
   }
@@ -92,7 +90,9 @@ class AuthController {
       if (!phone || !password) {
         return res
           .status(400)
-          .json({ message: "Talab qilinga malumotlar mavjud emas mavjud emas" });
+          .json({
+            message: "Talab qilinga malumotlar mavjud emas mavjud emas",
+          });
       }
       const { message, user, accessToken, refreshToken, redirect } =
         await authService.login(phone, password);
@@ -135,7 +135,9 @@ class AuthController {
       if (!phone || !password || !key) {
         return res
           .status(400)
-          .json({ message: "Talab qilinga malumotlar mavjud emas mavjud emas" });
+          .json({
+            message: "Talab qilinga malumotlar mavjud emas mavjud emas",
+          });
       }
       const { message, user, accessToken, refreshToken, redirect } =
         await authService.newPassword(phone, password, key);
