@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
   res.json({ name: "Hello World!" });
 });
 
-scheduleCronJobs();
+// scheduleCronJobs();
 
 swaggerDocs(app);
 

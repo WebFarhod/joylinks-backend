@@ -32,7 +32,7 @@ exports.createEnrollment = async (req, res) => {
       supportUntil: course.supportUntil,
       mentorPercentage: course.mentorPercentage,
     });
-    
+
     await enrollment.save();
     const coursePayment = await CoursePayment.findById(courseId);
     // ({
@@ -43,8 +43,10 @@ exports.createEnrollment = async (req, res) => {
     // });
     coursePayment.countCourse = coursePayment.countCourse + 1;
     coursePayment.total = coursePayment.total + course.price;
-
     await coursePayment.save();
+    const teacher = await User.findById(course.teacherId);
+    teacher.balance = teacher.balance + course.price;
+    teacher.save();
     res.status(201).json(enrollment);
   } catch (error) {
     res.status(400).json({ message: error.message });
