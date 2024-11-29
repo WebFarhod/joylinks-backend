@@ -280,12 +280,12 @@
 
 const Transaction = require("../models/payme.transaction.model");
 const { PaymeState } = require("../enums/PaymeState");
+const User = require("../models/user.model");
+const Payment = require("../models/payment.model");
 
 const Course = require("../models/course.model");
-const User = require("../models/user.model");
 
 const StudentCourse = require("../models/studentCourse.model");
-const Payment = require("../models/payment.model");
 const sendError = (res, code, message) => {
   res.json({
     error: {
@@ -499,6 +499,8 @@ const performTransaction = async (params, res) => {
       _id: tData.payment_id,
       user_id: tData.user_id,
     });
+    payment.isCompleted = true;
+    await payment.save();
     const user = await User.findById(tData.user_id);
     user.balance = user.balance + payment.amount;
     // const user = await User.updateById(user_id, { balance: tData.amount });

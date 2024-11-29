@@ -1,40 +1,43 @@
-const { default: mongoose } = require("mongoose");
 const Comment = require("../models/comment.model");
 const Course = require("../models/course.model");
 const User = require("../models/user.model");
+const { Types } = require("mongoose");
 
 exports.addComment = async (req, res) => {
   try {
     const { courseId, text } = req.body;
-    const userId = req.user.id;
+    if (!courseId || !text) {
+      return res
+        .status(400)
+        .json({ error: "Talab qilingan ma'lumotlar mavjud emas." });
+    }
+    const userId = req.user.sub;
     const course = await Course.findById(courseId);
     if (!course) {
       return res.status(404).json({ error: "Course not found" });
     }
-
-    // Create a new comment
     const comment = new Comment({
-      course: courseId,
-      user: userId,
+      courseId,
+      userId,
       text,
     });
 
-    // Save the comment to the database
     await comment.save();
-    res.status(201).json({ message: "Comment added successfully", comment });
+    return res
+      .status(201)
+      .json({ message: "Izoh muvaffaqiyatli yaratildi.", comment });
   } catch (error) {
     console.error("Error adding comment:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Get all approved comments for a specific course
 exports.getCommentsForCourse = async (req, res) => {
   const { courseId, page = 1, limit = 10 } = req.query;
   const user = req.user;
 
   try {
-    const id = new mongoose.Types.ObjectId(courseId);
+    const id = new Types.ObjectId(courseId);
     let query = {};
 
     if (!courseId) {
@@ -47,16 +50,17 @@ exports.getCommentsForCourse = async (req, res) => {
         query = {};
       } else {
         query.approved = true;
-        query.course = id;
+        query.courseId = id;
       }
     }
+    console.log(query);
 
     const comments = await Comment.aggregate([
       { $match: query },
       {
         $lookup: {
           from: "users",
-          localField: "user",
+          localField: "userId",
           foreignField: "_id",
           as: "user",
         },
@@ -66,7 +70,7 @@ exports.getCommentsForCourse = async (req, res) => {
       {
         $project: {
           _id: 1,
-          course: 1,
+          courseId: 1,
           text: 1,
           approved: 1,
           isRead: 1,
@@ -81,79 +85,105 @@ exports.getCommentsForCourse = async (req, res) => {
     //     .json({ message: "No comments found for this course" });
     // }
 
-    res.status(200).json(comments);
+    return res.status(200).json(comments);
   } catch (error) {
     console.error("Error fetching comments:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Admin approves a comment
 exports.approveComment = async (req, res) => {
   try {
     const { commentId } = req.params;
-    const id = new mongoose.Types.ObjectId(commentId);
-
-    // Find the comment by its ID
+    const user = req.user;
     const comment = await Comment.findById(commentId);
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
     }
-
-    // Only allow admins to approve comments
-    // if (req.user.role !== "admin") {
-    //   return res
-    //     .status(403)
-    //     .json({ error: "You are not authorized to approve this comment" });
-    // }
-
-    // Approve the comment
+    if (user.role == "teacher") {
+      const course = await Course.findOne({
+        _id: comment.courseId,
+        teacherId: user.sub,
+      });
+      if (!course) {
+        return res.status(400).json({ error: "Ruhsat berilmagan." });
+      }
+    }
+    if (comment.approved == true) {
+      return res
+        .status(200)
+        .json({ message: "Izoh muvaffaqiyatli tasdiqlangan", comment });
+    }
     comment.approved = true;
     await comment.save();
-
-    res.status(200).json({ message: "Comment approved successfully", comment });
+    return res
+      .status(200)
+      .json({ message: "Izoh muvaffaqiyatli tasdiqlandi.", comment });
   } catch (error) {
     console.error("Error approving comment:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Admin read a comment
 exports.readComment = async (req, res) => {
   try {
     const { commentId } = req.params;
+    const user = req.user;
     const comment = await Comment.findById(commentId);
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
+    }
+    if (user.role == "teacher") {
+      const course = await Course.findOne({
+        _id: comment.courseId,
+        teacherId: user.sub,
+      });
+      if (!course) {
+        return res.status(400).json({ error: "Ruhsat berilmagan." });
+      }
+    }
+    if (comment.isRead) {
+      return res
+        .status(200)
+        .json({ message: "Izoh o'qildi deb belgilangan", comment });
     }
 
     comment.isRead = true;
     await comment.save();
 
-    res.status(200).json({ message: "Comment read successfully", comment });
+    return res
+      .status(200)
+      .json({ message: "Izoh o'qildi deb belgilandi", comment });
   } catch (error) {
     console.error("Error reading comment:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Delete a comment by its ID
 exports.deleteComment = async (req, res) => {
   try {
     const { commentId } = req.params;
 
-    // Find the comment by its ID
-    const comment = await Comment.findByIdAndDelete(commentId);
-
+    const user = req.user;
+    const comment = await Comment.findById(commentId);
     if (!comment) {
       return res.status(404).json({ error: "Comment not found" });
     }
+    if (user.role == "teacher") {
+      const course = await Course.findOne({
+        _id: comment.courseId,
+        teacherId: user.sub,
+      });
+      if (!course) {
+        return res.status(400).json({ error: "Ruhsat berilmagan." });
+      }
+    }
 
-    // Delete the comment
-    // await comment.de();
-    res.status(200).json({ message: "Comment deleted successfully" });
+    await comment.deleteOne();
+
+    return res.status(200).json({ message: "Izoh o'chirildi." });
   } catch (error) {
     console.error("Error deleting comment:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -14,7 +14,12 @@ const paymentSchema = new Schema(
     },
     payment_type: {
       type: String,
-      enum: ["payme", "click"],
+      enum: ["payme", "click", "course"],
+      required: true,
+    },
+    isCompleted: {
+      type: Boolean,
+      default: false,
       required: true,
     },
   },

@@ -25,6 +25,15 @@ const courseSchema = new Schema(
     },
     teacherId: { type: Schema.Types.ObjectId, ref: "users", required: true },
     mentorId: { type: Schema.Types.ObjectId, ref: "users", required: true },
+    //new
+    mentorPercentage: {
+      type: Number,
+      required: true,
+    },
+    supportUntil: {
+      type: Number,
+      required: true,
+    },
   },
   {
     // toJSON: { virtuals: true }, toObject: { virtuals: true },

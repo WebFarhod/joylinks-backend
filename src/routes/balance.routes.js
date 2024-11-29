@@ -5,4 +5,6 @@ const balanceController = require("../controllers/balance.controller");
 
 router.post("/", UserMiddleware, balanceController.createBalance);
 
+router.get("/my-balance", UserMiddleware, balanceController.getMyBalance);
+
 module.exports = router;

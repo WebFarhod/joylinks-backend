@@ -3,17 +3,18 @@ const StudentCourse = require("../models/studentCourse.model");
 const mongoose = require("mongoose");
 const BaseError = require("../utils/baseError");
 const User = require("../models/user.model");
+const CoursePayment = require("../models/coursePayment");
 
 exports.createEnrollment = async (req, res) => {
   try {
     const { courseId, studentId } = req.body;
     const course = await Course.findById(courseId);
     if (!course) {
-      throw BaseError.NotFoundError("course topilmadi,");
+      return res.status(404).json({ message: "Course topilmadi." });
     }
     const user = await User.findById(studentId);
     if (!user) {
-      throw BaseError.NotFoundError("user topilmadi,");
+      return res.status(404).json({ message: "Student topilmadi." });
     }
     const studentCourse = await StudentCourse.findOne({
       courseId,
@@ -21,14 +22,29 @@ exports.createEnrollment = async (req, res) => {
     });
 
     if (studentCourse) {
-      res.status(400).json({ message: "already exists" });
+      return res.status(400).json({ message: "already exists" });
     }
 
     const enrollment = new StudentCourse({
       courseId,
       studentId,
+      price: course.price,
+      supportUntil: course.supportUntil,
+      mentorPercentage: course.mentorPercentage,
     });
+    
     await enrollment.save();
+    const coursePayment = await CoursePayment.findById(courseId);
+    // ({
+    //   courseId,
+    //   price: course.price,
+    //   supportUntil: course.supportUntil,
+    //   mentorPercentage: course.mentorPercentage,
+    // });
+    coursePayment.countCourse = coursePayment.countCourse + 1;
+    coursePayment.total = coursePayment.total + course.price;
+
+    await coursePayment.save();
     res.status(201).json(enrollment);
   } catch (error) {
     res.status(400).json({ message: error.message });

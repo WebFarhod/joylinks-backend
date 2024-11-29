@@ -8,6 +8,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const morgan = require("morgan");
 const ErrorMiddleware = require("./middlewares/error.middleware");
+const { scheduleCronJobs } = require("./utils/cronJobs");
 const app = express();
 
 app.all("/*", function (req, res, next) {
@@ -44,6 +45,8 @@ app.use("/api", routes);
 app.get("/", (req, res) => {
   res.json({ name: "Hello World!" });
 });
+
+scheduleCronJobs();
 
 swaggerDocs(app);
 

@@ -32,6 +32,18 @@ const studentCourseSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    price: {
+      type: Number,
+      required: true,
+    },
+    supportUntil: {
+      type: Number,
+      required: true,
+    },
+    mentorPercentage: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );

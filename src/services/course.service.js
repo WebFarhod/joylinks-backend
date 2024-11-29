@@ -6,6 +6,7 @@ const Module = require("../models/module.model");
 const User = require("../models/user.model");
 const BaseError = require("../utils/baseError");
 const StudentCourse = require("../models/studentCourse.model");
+const CoursePayment = require("../models/coursePayment");
 
 class CourseService {
   async checkTeacher(teacherId) {
@@ -34,11 +35,20 @@ class CourseService {
   }
 
   async create(
-    { name, description, price, image, categoryId, isTop, teacherId, mentorId },
+    {
+      name,
+      description,
+      price,
+      image,
+      categoryId,
+      isTop,
+      teacherId,
+      mentorId,
+      mentorPercentage,
+      supportUntil,
+    },
     user
   ) {
-    console.log("df", name);
-
     if (user.role === "admin") {
       await this.checkTeacher(teacherId);
       await this.checkMentor(teacherId, mentorId, user.role);
@@ -52,8 +62,16 @@ class CourseService {
         isTop,
         teacherId,
         mentorId,
+        mentorPercentage,
+        supportUntil,
       });
       await newCourse.save();
+      const coursePayment = new CoursePayment({
+        courseId: newCourse._id,
+        mentorPercentage,
+      });
+
+      await coursePayment.save();
       return { message: "Kurs yaratildi.", data: newCourse };
     } else {
       await this.checkTeacher(teacherId);
@@ -67,8 +85,16 @@ class CourseService {
         categoryId,
         teacherId: user.sub,
         mentorId,
+        mentorPercentage,
+        supportUntil,
       });
       await newCourse.save();
+      const coursePayment = new CoursePayment({
+        courseId: newCourse._id,
+        mentorPercentage,
+      });
+
+      await coursePayment.save();
       return { message: "Kurs yaratildi.", data: newCourse };
     }
   }
@@ -533,6 +559,8 @@ class CourseService {
       categoryId,
       teacherId,
       mentorId,
+      // mentorPercentage,
+      // supportUntil,
     },
     id,
     user
@@ -592,6 +620,7 @@ class CourseService {
           "Yangilash uchun hech qanday ma'lumot berilmagan."
         );
       }
+
       const course = await Course.findOneAndUpdate(filter, updateData, {
         new: true,
       });

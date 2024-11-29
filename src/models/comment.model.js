@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 
 const commentSchema = new mongoose.Schema(
   {
-    course: {
+    courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "courses",
       required: true,
     },
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",
       required: true,

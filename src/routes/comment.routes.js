@@ -4,6 +4,7 @@ const commentController = require("../controllers/comment.controller");
 const UserMiddleware = require("../middlewares/user.middleware");
 const AuthMiddleware = require("../middlewares/auth.middleware");
 const AdminMiddleware = require("../middlewares/admin.middleware");
+const RoleMiddleware = require("../middlewares/role.middleware");
 
 router.post("/add", AuthMiddleware, commentController.addComment);
 
@@ -11,13 +12,21 @@ router.get("/", UserMiddleware, commentController.getCommentsForCourse);
 
 router.put(
   "/:commentId/approve",
-  AdminMiddleware,
+  RoleMiddleware(["admin", "teacher"]),
   commentController.approveComment
 );
 
-router.put("/:commentId/read", AdminMiddleware, commentController.readComment);
+router.put(
+  "/:commentId/read",
+  RoleMiddleware(["admin", "teacher"]),
+  commentController.readComment
+);
 
-router.delete("/:commentId", AdminMiddleware, commentController.deleteComment);
+router.delete(
+  "/:commentId",
+  RoleMiddleware(["admin", "teacher"]),
+  commentController.deleteComment
+);
 
 module.exports = router;
 

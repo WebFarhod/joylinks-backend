@@ -16,8 +16,16 @@ const courseService = require("../services/course.service");
 class CourseController {
   async createCourse(req, res, next) {
     try {
-      const { name, description, price, categoryId, teacherId, mentorId } =
-        req.body;
+      const {
+        name,
+        description,
+        price,
+        categoryId,
+        teacherId,
+        mentorId,
+        mentorPercentage,
+        supportUntil,
+      } = req.body;
       const user = req.user;
       if (user.role == "admin") {
         if (
@@ -26,14 +34,24 @@ class CourseController {
           !price ||
           !categoryId ||
           !teacherId ||
-          !mentorId
+          !mentorId ||
+          !mentorPercentage ||
+          !supportUntil
         ) {
           return res
             .status(400)
             .json({ error: "Talab qilinga malumotlar mavjud emas" });
         }
       } else {
-        if (name || !description || !price || !categoryId || !mentorId) {
+        if (
+          name ||
+          !description ||
+          !price ||
+          !categoryId ||
+          !mentorId ||
+          !mentorPercentage ||
+          !supportUntil
+        ) {
           return res
             .status(400)
             .json({ error: "Talab qilinga malumotlar mavjud emas" });

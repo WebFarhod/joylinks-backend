@@ -44,9 +44,10 @@ class BalanceService {
     //   wallet.save();
     // } else {
     const payment = new Payment({
-      amount,
       user_id: user.sub,
+      amount,
       payment_type,
+      isCompleted: false,
     });
     await payment.save();
     const paymentSuccess = await this.processPayment(
