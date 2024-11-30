@@ -66,7 +66,7 @@ class BalanceService {
     const userData = await User.findById(user.sub);
     const payments = await Payment.find({ user_id: user.sub });
     const balance = userData.balance;
-    if (user.role == "student") {
+    if (user.role == "student" || user.role == "admin") {
       return {
         balance,
         payments,
@@ -79,10 +79,10 @@ class BalanceService {
 
       for (const course of courses) {
         coursePayments = await CoursePayment.find({ courseId: course._id });
-        for (const coursePayment of coursePayments) {
-          coursePayment.totalMentorSum =
-            (coursePayment.total * coursePayment.mentorPercentage) / 100;
-        }
+        // for (const coursePayment of coursePayments) {
+        //   coursePayment.totalMentorSum =
+        //     (coursePayment.total * coursePayment.mentorPercentage) / 100;
+        // }
       }
       return {
         balance,
@@ -95,10 +95,10 @@ class BalanceService {
       let coursePayments = null;
       for (const course of courses) {
         coursePayments = await CoursePayment.find({ courseId: course._id });
-        for (const coursePayment of coursePayments) {
-          coursePayment.totalMentorSum =
-            (coursePayment.total * coursePayment.mentorPercentage) / 100;
-        }
+        // for (const coursePayment of coursePayments) {
+        //   coursePayment.totalMentorSum =
+        //     (coursePayment.total * coursePayment.mentorPercentage) / 100;
+        // }
       }
       return {
         balance,

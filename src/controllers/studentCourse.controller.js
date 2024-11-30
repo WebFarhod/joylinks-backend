@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const BaseError = require("../utils/baseError");
 const User = require("../models/user.model");
 const CoursePayment = require("../models/coursePayment");
+const Payment = require("../models/payment.model");
 
 exports.createEnrollment = async (req, res) => {
   try {
@@ -37,18 +38,32 @@ exports.createEnrollment = async (req, res) => {
     const coursePayment = await CoursePayment.findOne({ courseId });
     console.log("coursePayment", coursePayment);
 
-    // ({
-    //   courseId,
-    //   price: course.price,
-    //   supportUntil: course.supportUntil,
-    //   mentorPercentage: course.mentorPercentage,
-    // });
     coursePayment.countCourse = coursePayment.countCourse + 1;
     coursePayment.total = coursePayment.total + course.price;
     await coursePayment.save();
+    const teacherSum =
+      course.price -
+      (course.price * 10) / 100 -
+      (course.price * (course.mentorPercentage || 0)) / 100;
     const teacher = await User.findById(course.teacherId);
-    teacher.balance = teacher.balance + course.price;
+    teacher.balance = teacher.balance + teacherSum;
     teacher.save();
+    await Payment.create({
+      user_id: teacher._id,
+      amount: teacherSum,
+      payment_type: "course",
+      isCompleted: true,
+    });
+    const adminSum = (course.price * 10) / 100;
+    const admin = await User.findOne({ role: "admin" });
+    admin.balance = admin.balance + adminSum;
+    admin.save;
+    await Payment.create({
+      user_id: admin._id,
+      amount: adminSum,
+      payment_type: "course",
+      isCompleted: true,
+    });
     res.status(201).json(enrollment);
   } catch (error) {
     res.status(400).json({ message: error.message });
