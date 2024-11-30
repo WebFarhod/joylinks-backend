@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 const BaseError = require("../utils/baseError");
 const Payment = require("../models/payment.model");
+const User = require("../models/user.model");
+const CoursePayment = require("../models/coursePayment");
+const Course = require("../models/course.model");
 
 class BalanceService {
   async processPayment(payment_type, amount, user_id, payment_id) {
@@ -57,6 +60,52 @@ class BalanceService {
       payment._id
     );
     return paymentSuccess;
+  }
+
+  async myBalance(user) {
+    const userData = await User.findById(user.sub);
+    const payments = await Payment.find({ user_id: user.sub });
+    const balance = userData.balance;
+    if (user.role == "student") {
+      return {
+        balance,
+        payments,
+      };
+    }
+    if (user.role == "mentor") {
+      const courses = await Course.find({ mentorId: user.sub });
+      let coursePayments = [];
+      console.log("ghj", courses);
+
+      for (const course of courses) {
+        coursePayments = await CoursePayment.find({ courseId: course._id });
+        for (const coursePayment of coursePayments) {
+          coursePayment.totalMentorSum =
+            (coursePayment.total * coursePayment.mentorPercentage) / 100;
+        }
+      }
+      return {
+        balance,
+        payments,
+        coursePayments,
+      };
+    }
+    if (user.role == "teacher") {
+      const courses = await Course.find({ teacherId: user.sub });
+      let coursePayments = null;
+      for (const course of courses) {
+        coursePayments = await CoursePayment.find({ courseId: course._id });
+        for (const coursePayment of coursePayments) {
+          coursePayment.totalMentorSum =
+            (coursePayment.total * coursePayment.mentorPercentage) / 100;
+        }
+      }
+      return {
+        balance,
+        payments,
+        mentorSum: coursePayments,
+      };
+    }
   }
 }
 

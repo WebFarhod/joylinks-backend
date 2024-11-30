@@ -66,6 +66,7 @@ async function processMonthlyPayments() {
         user_id: course.mentorId,
         amount: mentorSum,
         payment_type: "course",
+        isCompleted: true,
       });
       const coursePayment = await CoursePayment.findOne({
         courseId: course._id,

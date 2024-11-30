@@ -283,9 +283,9 @@ const { PaymeState } = require("../enums/PaymeState");
 const User = require("../models/user.model");
 const Payment = require("../models/payment.model");
 
-const Course = require("../models/course.model");
+// const Course = require("../models/course.model");
 
-const StudentCourse = require("../models/studentCourse.model");
+// const StudentCourse = require("../models/studentCourse.model");
 const sendError = (res, code, message) => {
   res.json({
     error: {
