@@ -21,6 +21,12 @@ router.get(
   lessonController.getLessonById
 );
 
+router.get(
+  "/my-lesson/:id",
+  RoleMiddleware(["student"]),
+  lessonController.getMyLessonById
+);
+
 router.put(
   "/:id",
   RoleMiddleware(["admin", "teacher"]),

@@ -3,6 +3,7 @@ const Course = require("../models/course.model");
 const Lesson = require("../models/lesson.model");
 const Module = require("../models/module.model");
 const BaseError = require("../utils/baseError");
+const StudentCourse = require("../models/studentCourse.model");
 
 class LessonService {
   async checkCourse(moduleId, user) {
@@ -88,6 +89,24 @@ class LessonService {
     const lesson = await Lesson.findOne(match).exec();
     if (!lesson) {
       throw BaseError.NotFoundError("Dars topilmadi yoki ruxsat berilmagan.");
+    }
+
+    return lesson;
+  }
+
+  async myLesson(id, user) {
+    const lesson = await Lesson.findOne({ _id: id, isActive: true });
+    if (!lesson) {
+      throw BaseError.NotFoundError("Dars topilmadi.");
+    }
+
+    const userCourse = await StudentCourse.findOne({
+      studentId: user.sub,
+      courseId: lesson.courseId,
+    });
+
+    if (!userCourse) {
+      throw BaseError.NotFoundError("Dars topilmadi.");
     }
 
     return lesson;

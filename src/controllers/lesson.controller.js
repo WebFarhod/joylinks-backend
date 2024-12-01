@@ -41,6 +41,19 @@ class LessonController {
     }
   }
 
+  async getMyLessonById(req, res, next) {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.status(400).json({ error: "ID mavjud emas" });
+      }
+      const data = await lessonService.myLesson(id, req.user);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async updateLessonById(req, res, next) {
     try {
       if (!req.params.id) {
