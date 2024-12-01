@@ -23,7 +23,7 @@ exports.createEnrollment = async (req, res) => {
     });
 
     if (studentCourse) {
-      return res.status(400).json({ message: "already exists" });
+      return res.status(400).json({ message: "Kurs allaqachon mavjud." });
     }
 
     const enrollment = new StudentCourse({
@@ -34,36 +34,151 @@ exports.createEnrollment = async (req, res) => {
       mentorPercentage: course.mentorPercentage,
     });
 
-    await enrollment.save();
     const coursePayment = await CoursePayment.findOne({ courseId });
-    console.log("coursePayment", coursePayment);
+    if (!coursePayment) {
+      return res
+        .status(400)
+        .json({ message: "Kursga alaqodor ma'lumotlar topilmadi" });
+    }
 
-    coursePayment.countCourse = coursePayment.countCourse + 1;
-    coursePayment.total = coursePayment.total + course.price;
-    await coursePayment.save();
+    coursePayment.countCourse += 1;
+    coursePayment.total += course.price;
+
     const teacherSum =
       course.price -
       (course.price * 10) / 100 -
       (course.price * (course.mentorPercentage || 0)) / 100;
     const teacher = await User.findById(course.teacherId);
-    teacher.balance = teacher.balance + teacherSum;
-    teacher.save();
+    if (!teacher) {
+      return res
+        .status(400)
+        .json({ message: "Kursga tegishli ustoz topilmadi" });
+    }
+    teacher.balance += teacherSum;
+
     await Payment.create({
       user_id: teacher._id,
       amount: teacherSum,
       payment_type: "course",
       isCompleted: true,
     });
+
     const adminSum = (course.price * 10) / 100;
     const admin = await User.findOne({ role: "admin" });
-    admin.balance = admin.balance + adminSum;
-    admin.save;
+    if (!admin) {
+      return res
+        .status(400)
+        .json({ message: "Admin tegishli ma'lumotlar topilmadi" });
+    }
+    admin.balance += adminSum;
+
     await Payment.create({
       user_id: admin._id,
       amount: adminSum,
       payment_type: "course",
       isCompleted: true,
     });
+
+    await enrollment.save();
+    await coursePayment.save();
+    await teacher.save();
+    await admin.save();
+
+    res.status(201).json(enrollment);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+exports.buyCourse = async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const studentId = req.user.sub;
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ message: "Course topilmadi." });
+    }
+
+    const user = await User.findById(studentId);
+    if (!user) {
+      return res.status(404).json({ message: "Student topilmadi." });
+    }
+
+    const studentCourse = await StudentCourse.findOne({
+      courseId,
+      studentId,
+    });
+    if (studentCourse) {
+      return res.status(400).json({ message: "Kurs allaqachon mavjud." });
+    }
+
+    if (user.balance < course.price) {
+      return res.status(400).json({
+        message: "hisobda mablag' yetarli emas.",
+        sum: course.price - user.balance,
+      });
+    }
+    user.balance -= course.price;
+    await user.save();
+
+    const enrollment = new StudentCourse({
+      courseId,
+      studentId,
+      price: course.price,
+      supportUntil: course.supportUntil,
+      mentorPercentage: course.mentorPercentage,
+    });
+
+    const coursePayment = await CoursePayment.findOne({ courseId });
+    if (!coursePayment) {
+      return res
+        .status(400)
+        .json({ message: "Kursga alaqodor ma'lumotlar topilmadi" });
+    }
+    coursePayment.countCourse += 1;
+    coursePayment.total += course.price;
+
+    const teacherSum =
+      course.price -
+      (course.price * 10) / 100 -
+      (course.price * (course.mentorPercentage || 0)) / 100;
+    const teacher = await User.findById(course.teacherId);
+    if (!teacher) {
+      return res
+        .status(400)
+        .json({ message: "Kursga tegishli ustoz topilmadi" });
+    }
+    teacher.balance += teacherSum;
+
+    await Payment.create({
+      user_id: teacher._id,
+      amount: teacherSum,
+      payment_type: "course",
+      isCompleted: true,
+    });
+
+    const adminSum = (course.price * 10) / 100;
+    const admin = await User.findOne({ role: "admin" });
+    if (!admin) {
+      return res
+        .status(400)
+        .json({ message: "Admin tegishli ma'lumotlar topilmadi" });
+    }
+    admin.balance += adminSum;
+
+    await Payment.create({
+      user_id: admin._id,
+      amount: adminSum,
+      payment_type: "course",
+      isCompleted: true,
+    });
+
+    await enrollment.save();
+    await coursePayment.save();
+    await teacher.save();
+    await admin.save();
+
     res.status(201).json(enrollment);
   } catch (error) {
     res.status(400).json({ message: error.message });

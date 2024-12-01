@@ -23,7 +23,7 @@ const RoleMiddleware = (roles) => {
         return next(BaseError.UnauthorizedError());
       }
       if (roles.includes(user.role)) {
-        req.user = user;
+        req.user = userData;
         next();
       } else {
         return next(BaseError.UnauthorizedError());

@@ -6,8 +6,16 @@ const { checkRole } = require("../middlewares/role.middleware");
 const { authenticateToken } = require("../middlewares/auth.middleware");
 const AdminMiddleware = require("../middlewares/admin.middleware");
 const AuthMiddleware = require("../middlewares/auth.middleware");
+const RoleMiddleware = require("../middlewares/role.middleware");
+const UserMiddleware = require("../middlewares/user.middleware");
 
 router.post("/", AdminMiddleware, studentCourseController.createEnrollment);
+router.post(
+  "/buy",
+  RoleMiddleware("student"),
+  // UserMiddleware,
+  studentCourseController.buyCourse
+);
 
 router.get("/", AdminMiddleware, studentCourseController.getAllEnrollments);
 
