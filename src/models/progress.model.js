@@ -5,7 +5,7 @@ const ProgressSchema = new Schema({
   lessonId: { type: Schema.Types.ObjectId, ref: "lessons" },
   courseId: { type: Schema.Types.ObjectId, ref: "courses" },
   isLessonCompleted: { type: Boolean, default: false },
-  isVedioCompleted: { type: Boolean, default: false },
+  isVideoCompleted: { type: Boolean, default: false },
   isTestPassed: { type: Boolean, default: false },
 });
 

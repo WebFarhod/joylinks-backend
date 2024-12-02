@@ -73,13 +73,13 @@ class LessonService {
     }
     const progress = await Progress.findOne({ userId: user.sub, lessonId });
     if (progress) {
-      progress.isVedioCompleted = true;
+      progress.isVideoCompleted = true;
       await progress.save();
     }
     const newProgress = new Progress({
       userId: user.sub,
       lessonId,
-      isVedioCompleted: true,
+      isVideoCompleted: true,
     });
     await newProgress.save();
     return { message: "The video lesson has ended." };
