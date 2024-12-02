@@ -61,7 +61,7 @@ class LessonService {
 
   async vedioCompleted(lessonId, user) {
     const lesson = await Lesson.findById(lessonId);
-    if (!studentCourse) {
+    if (!lesson) {
       throw BaseError.BadRequest("Dars topilmadi.");
     }
     const studentCourse = await StudentCourse.findOne({

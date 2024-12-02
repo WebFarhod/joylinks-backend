@@ -28,7 +28,7 @@ class LessonController {
           .status(400)
           .json({ error: "Talab qilinga malumotlar mavjud emas" });
       }
-      const data = await lessonService.create(lessonId, user);
+      const data = await lessonService.vedioCompleted(lessonId, user);
       return res.status(200).json(data);
     } catch (error) {
       next(error);

@@ -370,23 +370,36 @@ class CourseService {
 
         await Promise.all(
           modules.map(async (module) => {
-            const lessons = await Lesson.find({
+            let lessons = await Lesson.find({
               moduleId: module._id,
               isActive: true,
             }).populate("test");
 
+            // if (user) {
+            //   const lessonIds = lessons.map((lesson) => lesson._id);
+            //   const progressData = await Progress.find({
+            //     lessonId: { $in: lessonIds },
+            //     userId: user.sub,
+            //   });
+
+            //   lessons.forEach((lesson) => {
+            //     const progress = progressData.find(
+            //       (p) => p.lessonId.toString() === lesson._id.toString()
+            //     );
+            //     lesson.progress = progress || null;
+            //   });
+            // }
+
             if (user) {
-              const lessonIds = lessons.map((lesson) => lesson._id);
               const progressData = await Progress.find({
-                lessonId: { $in: lessonIds },
+                lessonId: { $in: lessons.map((l) => l._id) },
                 userId: user.sub,
               });
-
-              lessons.forEach((lesson) => {
+              lessons = lessons.map((lesson) => {
                 const progress = progressData.find(
                   (p) => p.lessonId.toString() === lesson._id.toString()
                 );
-                lesson.progress = progress || null;
+                return { ...lesson.toObject(), progress: progress || null };
               });
             }
 

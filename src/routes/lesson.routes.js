@@ -4,15 +4,15 @@ const lessonController = require("../controllers/lesson.controller");
 const RoleMiddleware = require("../middlewares/role.middleware");
 
 router.post(
-  "/",
-  RoleMiddleware(["admin", "teacher"]),
-  lessonController.createLesson
-);
-
-router.post(
   "/watched",
   RoleMiddleware(["student"]),
   lessonController.vedioCompleted
+);
+
+router.post(
+  "/",
+  RoleMiddleware(["admin", "teacher"]),
+  lessonController.createLesson
 );
 
 router.get(
