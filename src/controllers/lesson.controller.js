@@ -19,6 +19,22 @@ class LessonController {
     }
   }
 
+  async vedioCompleted(req, res, next) {
+    try {
+      const { lessonId } = req.body;
+      const user = req.user;
+      if (!lessonId) {
+        return res
+          .status(400)
+          .json({ error: "Talab qilinga malumotlar mavjud emas" });
+      }
+      const data = await lessonService.create(lessonId, user);
+      return res.status(200).json(data);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getLessons(req, res, next) {
     try {
       const data = await lessonService.getAll(req.query, req.user);

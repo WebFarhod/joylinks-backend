@@ -7,6 +7,7 @@ const User = require("../models/user.model");
 const BaseError = require("../utils/baseError");
 const StudentCourse = require("../models/studentCourse.model");
 const CoursePayment = require("../models/coursePayment");
+const Progress = require("../models/progress.model");
 
 class CourseService {
   async checkTeacher(teacherId) {
@@ -137,79 +138,6 @@ class CourseService {
       match.name = { $regex: search, $options: "i" };
     }
 
-    // const courses = await Course.aggregate([
-    //   { $match: match },
-    //   {
-    //     $lookup: {
-    //       from: "categories",
-    //       localField: "categoryId",
-    //       foreignField: "_id",
-    //       as: "category",
-    //     },
-    //   },
-    //   { $unwind: "$category" },
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "teacherId",
-    //       foreignField: "_id",
-    //       as: "teacher",
-    //     },
-    //   },
-    //   { $unwind: "$teacher" },
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       localField: "mentorId",
-    //       foreignField: "_id",
-    //       as: "mentor",
-    //     },
-    //   },
-    //   { $unwind: "$mentor" },
-    //   {
-    //     $lookup: {
-    //       from: "modules",
-    //       localField: "_id",
-    //       foreignField: "courseId",
-    //       as: "modules",
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "lessons",
-    //       localField: "modules._id",
-    //       foreignField: "moduleId",
-    //       as: "lessons",
-    //     },
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "studentcourses",
-    //       localField: "_id",
-    //       foreignField: "courseId",
-    //       as: "purchases",
-    //     },
-    //   },
-    //   { $skip: (page - 1) * limit },
-    //   { $limit: parseInt(limit) },
-    //   {
-    //     $project: {
-    //       name: 1,
-    //       description: 1,
-    //       price: 1,
-    //       image: 1,
-    //       isActive: 1,
-    //       isTop: 1,
-    //       category: { name: 1, _id: 1 },
-    //       teacher: { firstname: 1, lastname: 1, _id: 1 },
-    //       mentor: { firstname: 1, lastname: 1, _id: 1 },
-    //       moduleCounts: { $size: "$modules" },
-    //       lessonCounts: { $size: "$lessons" },
-    //       purchaseCounts: { $size: "$purchases" },
-    //     },
-    //   },
-    // ]);
-
     console.log("llk", match);
 
     const courses = await Course.aggregate([
@@ -297,7 +225,14 @@ class CourseService {
       },
     ]);
 
-    return courses;
+    const totalCourses = courses.length;
+
+    return {
+      totalCourses,
+      totalPages: Math.ceil(totalCourses / limit),
+      currentPage: parseInt(page),
+      courses,
+    };
   }
 
   async get(courseId, user) {
@@ -357,6 +292,20 @@ class CourseService {
         },
       },
       {
+        $lookup: {
+          from: "progress",
+          localField: "_id",
+          foreignField: "courseId",
+          as: "progress",
+        },
+      },
+      {
+        $unwind: {
+          path: "$progress",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
         $project: {
           _id: 1,
           name: 1,
@@ -382,6 +331,7 @@ class CourseService {
             lastname: "$mentor.lastname",
             photo: "$mentor.photo",
           },
+          progress: 1,
         },
       },
     ]);
@@ -424,7 +374,21 @@ class CourseService {
               moduleId: module._id,
               isActive: true,
             }).populate("test");
-            // .populate("progress");
+
+            if (user) {
+              const lessonIds = lessons.map((lesson) => lesson._id);
+              const progressData = await Progress.find({
+                lessonId: { $in: lessonIds },
+                userId: user.sub,
+              });
+
+              lessons.forEach((lesson) => {
+                const progress = progressData.find(
+                  (p) => p.lessonId.toString() === lesson._id.toString()
+                );
+                lesson.progress = progress || null;
+              });
+            }
 
             totalVideos += lessons.reduce(
               (sum, lesson) => sum + lesson.video_link.length,
@@ -445,76 +409,6 @@ class CourseService {
         course.materialCounts = totalMaterials;
         // course.modules = modules;
       }
-      // course.moduleCounts = modules.length;
-
-      // const totalModules = await Module.countDocuments({
-      //   courseId: course._id,
-      // });
-
-      // const totalLessons = await Lesson.countDocuments({
-      //   courseId: course._id,
-      // });
-
-      // const totalEnrolledStudents = await StudentCourse.countDocuments({
-      //   course_id: course._id,
-      // });
-
-      // course.moduleCounts = totalModules || 0;
-      // course.lessonCounts = totalLessons || 0;
-      // course.studentsCounts = totalEnrolledStudents || 0;
-
-      // const modules = await Module.find({ courseId: course._id });
-      // if (modules.length > 0) {
-      //   // let totalLessons = 0;
-      //   let totalVideos = 0;
-      //   let totalMaterials = 0;
-      //   // let totalTests = 0;
-      //   // let totalAssigns = 0;
-
-      //   await Promise.all(
-      //     modules.map(async (module) => {
-      //       const lessonCounts = await Lesson.aggregate([
-      //         { $match: { module_id: module._id } },
-      //         {
-      //           $project: {
-      //             videoLinkCount: { $size: "$video_link" },
-      //             materialsCount: { $size: "$materials" },
-      //           },
-      //         },
-      //         {
-      //           $group: {
-      //             _id: null,
-      //             totalCount: { $sum: 1 },
-      //             totalVideoLinks: { $sum: "$videoLinkCount" },
-      //             totalMaterials: { $sum: "$materialsCount" },
-      //           },
-      //         },
-      //       ]);
-
-      //       // totalLessons +=
-      //       //   lessonCounts.length > 0 ? lessonCounts[0].totalCount : 0;
-      //       totalVideos +=
-      //         lessonCounts.length > 0 ? lessonCounts[0].totalVideoLinks : 0;
-      //       totalMaterials +=
-      //         lessonCounts.length > 0 ? lessonCounts[0].totalMaterials : 0;
-
-      //       // const assignCounts = await Assign.countDocuments({
-      //       //   module_id: module._id,
-      //       // });
-      //       // totalAssigns += assignCounts;
-
-      //       // const testCounts = await Quiz.countDocuments({
-      //       //   module_id: module._id,
-      //       // });
-      //       // totalTests += testCounts;
-      //     })
-      //   );
-      //   course.videoCounts = totalVideos;
-      //   course.materialCounts = totalMaterials;
-      //   // course.lesson_counts = totalLessons;
-      //   // course.assign_counts = totalAssigns;
-      //   // course.test_counts = totalTests;
-      // }
     };
     let hasPurchased = false;
     if (user === null) {
@@ -528,6 +422,7 @@ class CourseService {
       console.log("rt", hasPurchased);
       await processCourse(course, hasPurchased);
     }
+
     return course;
   }
 

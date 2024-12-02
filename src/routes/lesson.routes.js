@@ -9,6 +9,12 @@ router.post(
   lessonController.createLesson
 );
 
+router.post(
+  "/watched",
+  RoleMiddleware(["student"]),
+  lessonController.vedioCompleted
+);
+
 router.get(
   "/",
   RoleMiddleware(["admin", "teacher", "mentor"]),

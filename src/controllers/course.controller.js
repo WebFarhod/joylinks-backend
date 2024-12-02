@@ -71,6 +71,8 @@ class CourseController {
       const data = await courseService.getAll(req.query, req.user);
       return res.status(200).json(data);
     } catch (error) {
+      console.log("error 1:", error);
+
       next(error);
     }
   }

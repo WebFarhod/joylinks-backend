@@ -4,6 +4,7 @@ const Lesson = require("../models/lesson.model");
 const Module = require("../models/module.model");
 const BaseError = require("../utils/baseError");
 const StudentCourse = require("../models/studentCourse.model");
+const Progress = require("../models/progress.model");
 
 class LessonService {
   async checkCourse(moduleId, user) {
@@ -56,6 +57,32 @@ class LessonService {
     });
     await lesson.save();
     return { message: "Dars muvaffaqiyatli yaratildi." };
+  }
+
+  async vedioCompleted(lessonId, user) {
+    const lesson = await Lesson.findById(lessonId);
+    if (!studentCourse) {
+      throw BaseError.BadRequest("Dars topilmadi.");
+    }
+    const studentCourse = await StudentCourse.findOne({
+      courseId: lesson.courseId,
+      studentId: user.sub,
+    });
+    if (!studentCourse) {
+      throw BaseError.BadRequest("Sizga tegishli dars topilmadi.");
+    }
+    const progress = await Progress.findOne({ userId: user.sub, lessonId });
+    if (progress) {
+      progress.isVedioCompleted = true;
+      await progress.save();
+    }
+    const newProgress = new Progress({
+      userId: user.sub,
+      lessonId,
+      isVedioCompleted: true,
+    });
+    await newProgress.save();
+    return { message: "The video lesson has ended." };
   }
 
   async getAll({ moduleId }, user) {
