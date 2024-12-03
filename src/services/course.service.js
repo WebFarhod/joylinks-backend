@@ -225,7 +225,7 @@ class CourseService {
       },
     ]);
 
-    const totalCourses = courses.length;
+    const totalCourses = await Course.countDocuments(match);
 
     return {
       totalCourses,

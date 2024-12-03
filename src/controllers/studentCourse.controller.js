@@ -122,6 +122,13 @@ exports.buyCourse = async (req, res) => {
     user.balance -= course.price;
     await user.save();
 
+    await Payment.create({
+      user_id: user._id,
+      amount: -course.price,
+      payment_type: "course",
+      isCompleted: true,
+    });
+
     const enrollment = new StudentCourse({
       courseId,
       studentId,
