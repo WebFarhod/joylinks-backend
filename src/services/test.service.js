@@ -85,17 +85,19 @@ class TestService {
     // const isTestPassed = scorePercentage >= 70; // 70% va undan yuqori natija muvaffaqiyatli deb qabul qilinadi.
 
     // 6. Progresni yangilash yoki yaratish
-    const progress = await Progress.findOneAndUpdate(
-      { userId: user._id, lessonId },
-      {
-        userId: user._id,
+    if (isTestPassed) {
+      const progress = await Progress.findOne({ userId: user.sub, lessonId });
+      if (progress) {
+        progress.isTestPassed = isTestPassed;
+        await progress.save();
+      }
+      const newProgress = new Progress({
+        userId: user.sub,
         lessonId,
-        isLessonCompleted: isTestPassed, // Agar test muvaffaqiyatli o'tgan bo'lsa, dars ham tugatilgan deb hisoblanadi
-        isTestPassed,
-      },
-      { upsert: true, new: true }
-    );
-
+        isTestPassed: isTestPassed,
+      });
+      await newProgress.save();
+    }
     return {
       message: isTestPassed
         ? "Tabriklaymiz! Testni muvaffaqiyatli topshirdingiz."
