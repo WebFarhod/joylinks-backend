@@ -62,6 +62,8 @@ class TestService {
 
   async checkTest(data, user) {
     const { lessonId, answers } = data;
+    console.log("fgfg", data);
+
     const test = await Test.findOne({ lessonId }).lean();
     if (!test) {
       throw BaseError.NotFoundError("Dars uchun test topilmadi");

@@ -12,7 +12,7 @@ class TestController {
 
   async checkTest(req, res, next) {
     try {
-      const data = await testService.checkTest(req.query, req.user);
+      const data = await testService.checkTest(req.body, req.user);
       return res.status(200).json(data);
     } catch (error) {
       next(error);
