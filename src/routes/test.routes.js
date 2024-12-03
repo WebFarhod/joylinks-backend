@@ -17,6 +17,4 @@ router.put("/", AdminMiddleware, testController.updateTest);
 
 router.delete("/:id", AdminMiddleware, testController.deleteTest);
 
-
-
 module.exports = router;
