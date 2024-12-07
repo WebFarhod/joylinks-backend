@@ -30,7 +30,12 @@ class BalanceService {
 
       console.log("====================================");
       console.log("0001:", queryString);
-      console.log("0002:", ` m=${Mid};ac.user_id=${user_id};a=${amount * 100}`);
+      console.log(
+        "0002:",
+        ` m=${Mid};ac.user_id=${user_id};a=${
+          amount * 100
+        };c=http://localhost:5173/student-balance`
+      );
       console.log("====================================");
 
       let base64String = Buffer.from(queryString).toString("base64");
