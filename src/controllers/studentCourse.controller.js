@@ -377,7 +377,7 @@ exports.getMyCourse = async (req, res) => {
           price: "$course_info.price",
           duration: "$course_info.duration",
           level: "$course_info.level",
-          photo: "$course_info.photo",
+          image: "$course_info.image",
           isActive: "$course_info.isActive",
           isTop: "$course_info.isTop",
 

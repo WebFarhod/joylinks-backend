@@ -301,8 +301,6 @@ exports.payme = async (req, res, next) => {
 
     switch (method) {
       case "CheckPerformTransaction": {
-        console.log("sdfs 111");
-
         const result = await checkPerformTransaction(params, res);
         return res.json(result);
       }
