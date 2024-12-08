@@ -44,13 +44,13 @@ class CourseController {
         }
       } else {
         if (
-          name ||
-          !description ||
-          !price ||
-          !categoryId ||
-          !mentorId ||
-          !mentorPercentage ||
-          !supportUntil
+          !name ||//
+          !description ||//
+          !price ||//
+          !categoryId ||//
+          !mentorId ||//
+          !mentorPercentage ||//
+          !supportUntil//
         ) {
           return res
             .status(400)

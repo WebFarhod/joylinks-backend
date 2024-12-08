@@ -24,7 +24,11 @@ class CourseService {
     }
     let mentor = await User.findOne(filter);
     if (!mentor) {
-      throw BaseError.NotFoundError("mentor topilmadi.");
+      if (type == "teacher") {
+        throw BaseError.NotFoundError("O'qituvchi yaratgan mentor topilmadi.");
+      } else {
+        throw BaseError.NotFoundError("mentor topilmadi.");
+      }
     }
   }
 
@@ -75,8 +79,8 @@ class CourseService {
       await coursePayment.save();
       return { message: "Kurs yaratildi.", data: newCourse };
     } else {
-      await this.checkTeacher(teacherId);
-      await this.checkMentor(teacherId, mentorId, user.role);
+      await this.checkTeacher(user.sub);
+      await this.checkMentor(user.sub, mentorId, user.role);
       await this.checkCategory(categoryId);
       const newCourse = new Course({
         name,

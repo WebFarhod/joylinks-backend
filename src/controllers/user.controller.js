@@ -29,7 +29,8 @@ class UserController {
 
   async getUsers(req, res, next) {
     try {
-      const data = await userService.getAll(req.query);
+      const user = req.user;
+      const data = await userService.getAll(req.query, user);
       return res.status(200).json(data);
     } catch (error) {
       next(error);

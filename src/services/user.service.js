@@ -52,7 +52,7 @@ class UserService {
     };
   }
 
-  async getAll(data) {
+  async getAll(data, user) {
     const { page = 1, limit = 10, role, search, isActive } = data;
     const matchStage = {};
 
@@ -66,6 +66,9 @@ class UserService {
 
     if (isActive !== undefined) {
       matchStage.isActive = isActive;
+    }
+    if (user.role == "teacher") {
+      matchStage.createBy = user.sub;
     }
 
     const pipeline = [
