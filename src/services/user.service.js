@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const BaseError = require("../utils/baseError");
 const mongoose = require("mongoose");
 const Auth = require("../models/auth.model");
+const { Types } = require("mongoose");
 // import RoleUser from "../enums/role.enum";
 // import { AddUserCourseDto, CheckUserApprovedDto } from "../validators/user";
 // import Course from "../schemas/course.schema";
@@ -53,6 +54,8 @@ class UserService {
   }
 
   async getAll(data, user) {
+    console.log(data, user);
+
     const { page = 1, limit = 10, role, search, isActive } = data;
     const matchStage = {};
 
@@ -68,8 +71,9 @@ class UserService {
       matchStage.isActive = isActive;
     }
     if (user.role == "teacher") {
-      matchStage.createBy = user.sub;
+      matchStage.createBy = new Types.ObjectId(user.sub);
     }
+    console.log(matchStage);
 
     const pipeline = [
       { $match: matchStage },
