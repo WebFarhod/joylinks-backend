@@ -10,10 +10,10 @@ class ModuleService {
       filter._id = courseId;
     }
     if (user.role == "teacher") {
-      filter.teacherId = user._id;
+      filter.teacherId = user.sub;
     }
     if (user.role == "mentor") {
-      filter.mentorId = user._id;
+      filter.mentorId = user.sub;
     }
 
     const course = await Course.findOne(filter);
