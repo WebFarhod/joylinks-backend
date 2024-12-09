@@ -12,19 +12,19 @@ router.get("/", UserMiddleware, commentController.getCommentsForCourse);
 
 router.put(
   "/:commentId/approve",
-  RoleMiddleware(["admin", "teacher"]),
+  RoleMiddleware(["admin", "teacher", "mentor"]),
   commentController.approveComment
 );
 
 router.put(
   "/:commentId/read",
-  RoleMiddleware(["admin", "teacher"]),
+  RoleMiddleware(["admin", "teacher", "mentor"]),
   commentController.readComment
 );
 
 router.delete(
   "/:commentId",
-  RoleMiddleware(["admin", "teacher"]),
+  RoleMiddleware(["admin", "teacher", "mentor"]),
   commentController.deleteComment
 );
 

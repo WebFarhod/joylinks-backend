@@ -61,6 +61,14 @@ exports.getCommentsForCourse = async (req, res) => {
       }
       const courseIds = teacherCourses.map((course) => course._id);
       query.courseId = { $in: courseIds };
+    }
+    if (user && user.role === "mentor") {
+      const mentorCourses = await Course.find({ mentorId: user.sub });
+      if (!mentorCourses || mentorCourses.length === 0) {
+        return res.status(200).json([]);
+      }
+      const courseIds = mentorCourses.map((course) => course._id);
+      query.courseId = { $in: courseIds };
     } else {
       if (!courseId) {
         return res.status(400).json({ message: "send comment id" });
