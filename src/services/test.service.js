@@ -104,6 +104,7 @@ class TestService {
       message: isTestPassed
         ? "Tabriklaymiz! Testni muvaffaqiyatli topshirdingiz."
         : "Afsuski, testdan o'tolmadingiz. Qayta urinib ko'ring.",
+      isPassed: isTestPassed,
       // totalQuestions,
       // correctAnswers: correctCount,
       // scorePercentage,
