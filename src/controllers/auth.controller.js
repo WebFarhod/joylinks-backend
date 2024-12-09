@@ -9,6 +9,11 @@ class AuthController {
           .status(400)
           .json({ message: "Talab qilinga malumotlar mavjud emas" });
       }
+      if (phone.length !== 13) {
+        return res
+          .status(400)
+          .json({ message: "Telefon raqami talab qilingan miqdordan qisqa." });
+      }
       const data = await authService.checkPhone(phone);
       return res.status(200).json(data);
     } catch (error) {
@@ -19,11 +24,18 @@ class AuthController {
   async register(req, res, next) {
     try {
       const { firstname, lastname, phone, password } = req.body;
+
       if (!firstname || !lastname || !phone || !password) {
         return res
           .status(400)
           .json({ message: "Talab qilinga malumotlar mavjud emas" });
       }
+      if (phone.length !== 13) {
+        return res
+          .status(400)
+          .json({ message: "Telefon raqami talab qilingan miqdordan qisqa." });
+      }
+
       const data = await authService.register(
         firstname,
         lastname,
@@ -88,11 +100,9 @@ class AuthController {
       const { phone, password } = req.body;
 
       if (!phone || !password) {
-        return res
-          .status(400)
-          .json({
-            message: "Talab qilinga malumotlar mavjud emas mavjud emas",
-          });
+        return res.status(400).json({
+          message: "Talab qilinga malumotlar mavjud emas mavjud emas",
+        });
       }
       const { message, user, accessToken, refreshToken, redirect } =
         await authService.login(phone, password);
@@ -133,11 +143,9 @@ class AuthController {
       const { phone, password, key } = req.body;
 
       if (!phone || !password || !key) {
-        return res
-          .status(400)
-          .json({
-            message: "Talab qilinga malumotlar mavjud emas mavjud emas",
-          });
+        return res.status(400).json({
+          message: "Talab qilinga malumotlar mavjud emas mavjud emas",
+        });
       }
       const { message, user, accessToken, refreshToken, redirect } =
         await authService.newPassword(phone, password, key);

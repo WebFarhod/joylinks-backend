@@ -48,12 +48,19 @@ exports.getCommentsForCourse = async (req, res) => {
     } else {
       if (user && user.role === "admin") {
         query = {};
+      }
+      if (user && user.role === "teacher") {
+        const teacherCourses = await Course.find({ teacherId: user.sub });
+        if (!teacherCourses || teacherCourses.length === 0) {
+          return res.status(200).json([]);
+        }
+        const courseIds = teacherCourses.map((course) => course._id);
+        query.courseId = { $in: courseIds };
       } else {
         query.approved = true;
         query.courseId = id;
       }
     }
-    console.log(query);
 
     const comments = await Comment.aggregate([
       { $match: query },
