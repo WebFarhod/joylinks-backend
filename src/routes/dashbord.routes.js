@@ -1,13 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const dashbordController = require("../controllers/dashbord.controller");
-const { authenticateToken } = require("../middlewares/auth.middleware");
-const { checkRole } = require("../middlewares/role.middleware");
+const RoleMiddleware = require("../middlewares/role.middleware");
 
 router.get(
   "/",
-  authenticateToken,
-  checkRole("admin"),
+  RoleMiddleware(["admin"]),
   dashbordController.getDashboardData
 );
 
