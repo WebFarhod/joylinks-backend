@@ -40,27 +40,35 @@ exports.getCommentsForCourse = async (req, res) => {
     const id = new Types.ObjectId(courseId);
     let query = {};
 
-    if (!courseId) {
-      if (!user || (user && user.role !== "admin")) {
+    console.log("er", user);
+
+    // if (!courseId) {
+    //   if (
+    //     !user ||
+    //     (user && user.role !== "admin" && user && user.role !== "teacher")
+    //   ) {
+    //     return res.status(400).json({ message: "send comment id" });
+    //   }
+    //   query = {};
+    // } else {
+    if (user && user.role === "admin") {
+      query = {};
+    }
+    if (user && user.role === "teacher") {
+      const teacherCourses = await Course.find({ teacherId: user.sub });
+      if (!teacherCourses || teacherCourses.length === 0) {
+        return res.status(200).json([]);
+      }
+      const courseIds = teacherCourses.map((course) => course._id);
+      query.courseId = { $in: courseIds };
+    } else {
+      if (!courseId) {
         return res.status(400).json({ message: "send comment id" });
       }
-      query = {};
-    } else {
-      if (user && user.role === "admin") {
-        query = {};
-      }
-      if (user && user.role === "teacher") {
-        const teacherCourses = await Course.find({ teacherId: user.sub });
-        if (!teacherCourses || teacherCourses.length === 0) {
-          return res.status(200).json([]);
-        }
-        const courseIds = teacherCourses.map((course) => course._id);
-        query.courseId = { $in: courseIds };
-      } else {
-        query.approved = true;
-        query.courseId = id;
-      }
+      query.approved = true;
+      query.courseId = id;
     }
+    // }
 
     const comments = await Comment.aggregate([
       { $match: query },
