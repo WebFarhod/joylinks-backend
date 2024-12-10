@@ -11,7 +11,11 @@ router.post(
   userController.createUser
 );
 
-router.get("/", RoleMiddleware(["admin", "teacher"]), userController.getUsers);
+router.get(
+  "/",
+  RoleMiddleware(["admin", "teacher", "mentor"]),
+  userController.getUsers
+);
 
 router.get("/:id", AdminMiddleware, userController.getUserById);
 

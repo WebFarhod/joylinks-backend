@@ -20,6 +20,7 @@ const RoleMiddleware = require("../middlewares/role.middleware");
 const videoRoutes = require("./video.routes");
 const smsRoutes = require("./sms.routes");
 const dashbordRoutes = require("./dashbord.routes");
+const contactRoutes = require("./contact.routes");
 // const questionRoutes = require("./question.routes");
 // const reviewRoutes = require("./review.routes");
 // const assignRoutes = require("./assign.routes");
@@ -51,8 +52,9 @@ router.use("/payment", paymentRoutes);
 router.use("/balance", balanceRoutes);
 router.use("/statistics", getStatisAllData);
 router.use("/test", testRoutes);
-router.use("/sms", smsRoutes);
+// router.use("/sms", smsRoutes);
 router.use("/dashboard", dashbordRoutes);
+router.use("/contacts", contactRoutes);
 router.use(
   "/videos",
   //   authenticateToken,

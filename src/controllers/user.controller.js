@@ -30,6 +30,9 @@ class UserController {
   async getUsers(req, res, next) {
     try {
       const user = req.user;
+      if (user.role == "mentor") {
+        return res.status(200).json("data");
+      }
       const data = await userService.getAll(req.query, user);
       return res.status(200).json(data);
     } catch (error) {
