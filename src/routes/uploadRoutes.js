@@ -46,7 +46,7 @@ const AuthMiddleware = require("../middlewares/auth.middleware");
 const router = express.Router();
 
 // Fayllarni yuklash uchun marshrut
-router.post("/:type", AuthMiddleware, (req, res) => {
+router.post("/:type", (req, res) => {
   const { type } = req.params;
 
   if (["assigns", "questions", "banners", "files", "images"].includes(type)) {
